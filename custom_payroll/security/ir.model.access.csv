@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_payroll_community_structure_hr_user,payroll.summary.wizard.user,model_payroll_summary_wizard,,1,1,1,1
+access_payroll_summary_excel,payroll.summary.exce.user,model_payroll_summary_excel,,1,1,1,1
+access_hr_expense,hr.expense.user,model_hr_expense,,1,1,1,1
+access_hr_expense,hr.expense.user,model_hr_expense,,1,1,1,1

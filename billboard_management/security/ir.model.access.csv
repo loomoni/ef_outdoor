@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_billboard,billboard_access,model_billboard_management,,1,1,1,1
+access_billboard_contract,billboard_contract_access,model_billboard_contract,,1,1,1,1
+access_billboard_quotation,billboard_quotation_access,model_billboard_quotation,,1,1,1,1
+access_billboard_quotation_line,billboard_quotation_line_access,model_billboard_quotation_line,,1,1,1,1
+access_billboard_invoice,billboard_invoice_access,model_tax_invoice,,1,1,1,1
+access_billboard_invoice_line,billboard_invoice_line_access,model_tax_invoice_line,,1,1,1,1
+access_configuration_region_line,configuration_region_access,model_configuration_region,,1,1,1,1
+access_configuration_configuration_media_type,configuration_configuration_media_type_access,model_configuration_media_type,,1,1,1,1
+

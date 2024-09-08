@@ -1,0 +1,71 @@
+<odoo>
+    <menuitem id="billboard_management_menu" name="Billboard" sequence="10"/>
+
+    <!--    <menuitem id="billboard_menu" name="Billboards" parent="" sequence="10"/>-->
+
+    <record id="action_billboard" model="ir.actions.act_window">
+        <field name="name">Billboards</field>
+        <field name="res_model">billboard.management</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+
+    <menuitem id="billboard_management_menuitem" name="Billboards" parent="billboard_management_menu"
+              action="action_billboard" sequence="10"/>
+
+    <!--    Contract Menu -->
+
+
+    <record id="action_billboard_contract" model="ir.actions.act_window">
+        <field name="name">Contracts</field>
+        <field name="res_model">billboard.contract</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+     <menuitem id="billboard_contract_menu" name="Contracts" parent="billboard_management_menu" action="action_billboard_contract" sequence="20"/>
+
+
+    <!--    Quotation Menu-->
+    <record id="action_billboard_quotation" model="ir.actions.act_window">
+        <field name="name">Proforma Invoice</field>
+        <field name="res_model">billboard.quotation</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="billboard_quotation_menu" name="Proforma Invoice" parent="billboard_management_menu"
+              action="action_billboard_quotation" sequence="15"/>
+
+
+    <!--    Tax Menu-->
+
+    <record id="action_billboard_invoice" model="ir.actions.act_window">
+        <field name="name">Invoice</field>
+        <field name="res_model">tax.invoice</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="billboard_tax_menu" name="Tax Invoice" parent="billboard_management_menu" action="action_billboard_invoice" sequence="15"/>
+
+    <!--    Configuration Menu -->
+
+    <menuitem id="configuration_menu" name="Configuration" parent="billboard_management_menu" sequence="20"/>
+
+    <!--    Region-->
+    <record id="action_configuration_region" model="ir.actions.act_window">
+        <field name="name">Region</field>
+        <field name="res_model">configuration.region</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="region_menu" parent="configuration_menu" action="action_configuration_region" sequence="1"/>
+
+    <!--    Media type-->
+
+    <record id="action_configuration_media_type" model="ir.actions.act_window">
+        <field name="name">Media Type</field>
+        <field name="res_model">configuration.media.type</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="media_type_menu" parent="configuration_menu" action="action_configuration_media_type" sequence="2"/>
+
+</odoo>

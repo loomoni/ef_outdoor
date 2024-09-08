@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_region_tree" model="ir.ui.view">
+        <field name="name">configuration.region.tree</field>
+        <field name="model">configuration.region</field>
+        <field name="arch" type="xml">
+            <tree string="Region">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_region_form" model="ir.ui.view">
+        <field name="name">configuration.region.form</field>
+        <field name="model">configuration.region</field>
+        <field name="arch" type="xml">
+            <form string="Region">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+<!--    Media type starts -->
+
+        <record id="view_configuration_media_type_tree" model="ir.ui.view">
+        <field name="name">configuration.media.type.tree</field>
+        <field name="model">configuration.media.type</field>
+        <field name="arch" type="xml">
+            <tree string="Media Type">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_media_type_form" model="ir.ui.view">
+        <field name="name">configuration.media.form</field>
+        <field name="model">configuration.media.type</field>
+        <field name="arch" type="xml">
+            <form string="Media Type">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

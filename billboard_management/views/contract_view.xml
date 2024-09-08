@@ -1,0 +1,53 @@
+<odoo>
+
+    <record id="view_contract_tree" model="ir.ui.view">
+        <field name="name">billboard.contract.tree</field>
+        <field name="model">billboard.contract</field>
+        <field name="arch" type="xml">
+            <tree string="Billboard Contracts">
+                <field name="name"/>
+                <field name="billboard_id"/>
+                <field name="customer_id"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_contract_form" model="ir.ui.view">
+        <field name="name">billboard.contract.form</field>
+        <field name="model">billboard.contract</field>
+        <field name="arch" type="xml">
+            <form string="Billboard Contract">
+                <header>
+
+                    <button name="action_mark_active" string="Mark Active" class="oe_highlight" states="draft,sent"
+                            type="object"/>
+                    <button name="button_expire" string="Expired" class="oe_highlight" states="active"
+                            type="object"/>
+                    <button name="action_cancel_contract" string="Cancel" states="draft,sent,confirmed,"
+                            type="object"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,active,expired,cancelled"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="customer_id"/>
+                        </group>
+                        <group>
+                            <field name="name"/>
+                            <field name="billboard_id"/>
+                        </group>
+                        <group>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

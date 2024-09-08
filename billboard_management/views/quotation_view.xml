@@ -1,0 +1,84 @@
+<odoo>
+
+    <record id="view_quotation_tree" model="ir.ui.view">
+        <field name="name">billboard.quotation.tree</field>
+        <field name="model">billboard.quotation</field>
+        <field name="arch" type="xml">
+            <tree string="Billboard Quotations">
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="view_quotation_form" model="ir.ui.view">
+        <field name="name">billboard.quotation.form</field>
+        <field name="model">billboard.quotation</field>
+        <field name="arch" type="xml">
+            <form string="Billboard Quotation">
+                <header>
+                    <button name="action_send_quotation" string="Send Quotation" class="oe_highlight" states="draft"
+                            type="object"/>
+<!--                    <button name="action_send_quotation" string="Create Invoice" class="oe_highlight" states="confirmed"-->
+<!--                            type="object"/>-->
+                    <button name="action_cancel_quotation" string="Cancel" states="draft,sent,confirmed,"
+                            type="object"/>
+                    <button name="action_confirm_quotation" string="Confirm" class="oe_highlight"  states="draft,sent" type="object"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,sent,confirmed,cancelled"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <!--                        <field name="billboard_id"/>-->
+                            <field name="customer_id"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                        </group>
+                        <!--                        <field name="end_date"/>-->
+                        <!--                        <field name="rental_price"/>-->
+                        <!--                        <field name="state" readonly="1"/>-->
+                    </group>
+                    <!--                    <footer>-->
+                    <!--                        <button string="Send Quotation" type="object" name="action_send_quotation" states="draft" class="btn-primary"/>-->
+                    <!--                        <button string="Confirm" type="object" name="action_confirm_quotation" states="sent" class="btn-success"/>-->
+                    <!--                    </footer>-->
+                    <notebook>
+                        <page string="Quotation Lines">
+                            <field name="billboard_quotation_line_ids">
+                                <tree editable="bottom">
+                                    <field name="billboard_id"/>
+                                    <field name="unit"/>
+                                    <field name="faces"/>
+                                    <field name="flighting_cost" optional="hide"/>
+                                    <field name="material_cost" optional="hide"/>
+                                    <field name="rental_per_month" optional="hide"/>
+                                    <field name="no_of_months" optional="hide"/>
+                                    <field name="cost_subtotal" readonly="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                    <group class="oe_subtotal_footer oe_right">
+                        <field name="sub_total"/>
+                        <field name="vat"/>
+                        <field name="amount_total" class="oe_subtotal_footer_separator" widget="monetary"
+                               options="{'currency_field': 'currency_id'}"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+
+</odoo>

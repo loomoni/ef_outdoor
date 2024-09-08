@@ -1,0 +1,68 @@
+<odoo>
+
+    <record model="ir.ui.view" id="view_receipt_no">
+        <field name="name">view.purchase.order.inherit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='currency_id']" position="after">
+                <field name="receipt_no"/>
+            </xpath>
+        </field>
+    </record>
+
+<!--    <record model="ir.ui.view" id="view_payslip_edit">-->
+<!--        <field name="name">view.hr.payslip.inherit</field>-->
+<!--        <field name="model">hr.payslip</field>-->
+<!--        <field name="inherit_id" ref="hr_payroll_community.view_hr_payslip_form"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <xpath expr="//form/header/button[@name='refund_sheet']" position="after">-->
+<!--                <button string="Return to draft" name="return_draft" type="object" class="oe_highlight"/>-->
+<!--            </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
+
+    <record model="ir.ui.view" id="payroll_summary_wizard">
+        <field name="name">Payroll Summary</field>
+        <field name="model">payroll.summary.wizard</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Payroll Summary">
+                <group>
+                    <group>
+                        <field name="date_from"/>
+                    </group>
+                    <group>
+                        <field name="date_to"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="get_report" string="Get Report" type="object" class="oe_highlight"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_payroll_summary_excel">
+        <field name="name">view.payroll.summary.excel</field>
+        <field name="model">payroll.summary.excel</field>
+        <field name="arch" type="xml">
+            <form string="Download Your Payroll Summary Here">
+                <field name="name" invisible="1"/>
+                <field name="file_download" widget="download_link" filename="name"/>
+            </form>
+        </field>
+    </record>
+
+    <act_window id="action_payroll_summary_wizard"
+                name="Payroll Summary"
+                res_model="payroll.summary.wizard"
+                view_mode="form"
+                target="new"/>
+
+    <menuitem action="action_payroll_summary_wizard"
+              id="menu_payroll_summary_wizard"
+              sequence="50"
+              parent="hr_payroll_community.menu_hr_payroll_community_root"/>
+</odoo>

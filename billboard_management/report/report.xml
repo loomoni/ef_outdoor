@@ -1,0 +1,24 @@
+<odoo>
+    <data>
+        <record id="action_print_proforma_invoice" model="ir.actions.report">
+            <field name="name">Proforma Invoice</field>
+            <field name="model">billboard.quotation</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">billboard_management.report_proforma_invoice_document</field>
+            <field name="report_file">billboard_management.report_proforma_invoice_document</field>
+            <field name="binding_model_id" ref="model_billboard_quotation"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <record id="action_print_tax_invoice" model="ir.actions.report">
+            <field name="name">Invoice</field>
+            <field name="model">tax.invoice</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">billboard_management.report_tax_invoice_document</field>
+            <field name="report_file">billboard_management.report_tax_invoice_document</field>
+            <field name="binding_model_id" ref="model_tax_invoice"/>
+            <field name="binding_type">report</field>
+        </record>
+
+    </data>
+</odoo>

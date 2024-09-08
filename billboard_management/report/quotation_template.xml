@@ -1,0 +1,276 @@
+<odoo>
+    <template id="report_proforma_invoice_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <table class="table"
+                       style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Times New Roman', Times, serif; font-size: 9.5pt;">
+                    <tr style="height: 30px">
+                        <td style="width: 5%"></td>
+                        <td style="width: 30%"></td>
+                        <td style=""></td>
+                        <td style=" width: 20%">
+                            <div class=" pb-3 mb-4">
+                                <img t-if="o.company_id.logo"
+                                     style="max-height:500px; max-width: 80%; width:auto"
+                                     t-att-src="'data:image/png;base64,'+o.company_id.logo.decode('utf-8')"
+                                     alt="Logo"/>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 5%"></td>
+                        <td style="width: 30%"></td>
+                        <td style=""></td>
+                        <td style="width: 20%">
+                            <strong>
+                                <t t-esc="o.company_info().get('street')"/>
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 5%"></td>
+                        <td style="width: 30%"></td>
+                        <td style=""></td>
+                        <td style="width: 20%">
+                            <strong>
+                                <t t-esc="o.company_info().get('city')"/>
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr style="height: 20px">
+                        <td style="width: 5%"></td>
+                        <td style="width: 30%"></td>
+                        <td style=""></td>
+                        <td style="width: 20%"></td>
+                    </tr>
+
+                    <tr>
+                        <td style="width: 5%">
+                            <strong>TO:</strong>
+                        </td>
+                        <td style="width: 30%">
+                            <strong>
+                                <span t-field="o.customer_id.name"/>
+                            </strong>
+                        </td>
+                        <td style=""></td>
+                        <td style="width: 20%">
+                            <strong>
+                                TIN NO:
+                                <t t-esc="o.company_info().get('vat')"/>
+                            </strong>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="width: 5%">
+                        </td>
+                        <td style="width: 30%">
+                            <strong>
+                                <span t-field="o.customer_id.street"/>
+                            </strong>
+                        </td>
+                        <td style=""></td>
+                        <td style="width: 20%">
+                            <strong>
+                                VRN NO:
+                                <span t-esc="o.company_info().get('regNo')"/>
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 5%"></td>
+
+                        <td style="width: 30%">
+                            <strong>
+                                <span t-field="o.customer_id.city"/>
+                            </strong>
+                        </td>
+                        <td></td>
+                        <td style="width: 20%">
+                            <strong>
+
+                                <span t-field="o.name"/>
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr style="height: 20px">
+                        <td style="width: 5%"></td>
+                        <td style="width: 30%"></td>
+                        <td></td>
+                        <td style="width: 20%"></td>
+                    </tr>
+                    <tr>
+                        <td style="bwidth: 5%"></td>
+
+                        <td style="width: 30%">
+
+                        </td>
+                        <td style=""></td>
+                        <td style="width: 20%">
+                            <strong>
+                                DATE:
+                                <span t-field="o.date"/>
+                            </strong>
+                        </td>
+                    </tr>
+
+                </table>
+                <div style="text-align: center; padding: 10px; font-size: 19px; font-weight: bold; font-family: 'Times New Roman', Times, serif; ">
+                    PROFORMA INVOICE
+                </div>
+                <table class="table"
+                       style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Times New Roman', Times, serif; font-size: 10pt;">
+                    <thead>
+                        <tr>
+                            <th style="padding: 10px; border: 1px solid #000; width: 5%; background-color: #f2f2f2; font-weight: bold">
+                                No.
+                            </th>
+                            <th style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
+                                Region
+                            </th>
+                            <th style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
+                                Media Type
+                            </th>
+                            <th style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
+                                Size(m)
+                            </th>
+                            <th style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
+                                Units
+                            </th>
+                            <th style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
+                                Faces
+                            </th>
+
+                            <!-- Conditionally Render flighting_cost Cost Column -->
+                            <th t-if="any(line.flighting_cost for line in o.billboard_quotation_line_ids)"
+                                style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
+                                Flight Cost
+                            </th>
+
+                            <!-- Conditionally Render Material Printing Cost Column -->
+                            <th t-if="any(line.material_cost for line in o.billboard_quotation_line_ids)"
+                                style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
+                                Material Printing Cost
+                            </th>
+
+                            <!-- Conditionally Render Rental / Month Column -->
+                            <th t-if="any(line.rental_per_month for line in o.billboard_quotation_line_ids)"
+                                style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
+                                Rental / Month (TSH)
+                            </th>
+
+                            <!-- Conditionally Render No of Months Column -->
+                            <th t-if="any(line.no_of_months for line in o.billboard_quotation_line_ids)"
+                                style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
+                                No Months
+                            </th>
+
+                            <!-- Total Cost Column -->
+                            <th style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: right; font-weight: bold">
+                                Total Cost
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <t t-set="index" t-value="0"/>
+                        <t t-foreach="o.billboard_quotation_line_ids" t-as="line">
+                            <tr>
+                                <!-- Index Column -->
+                                <td style="padding: 10px; border: 1px solid #000; width: 5%">
+                                    <span t-esc="index + 1"/>.
+                                </td>
+
+                                <!-- Location Column -->
+                                <td style="padding: 10px; border: 1px solid #000;">
+                                    <span t-esc="line.billboard_id.location"/>
+                                </td>
+
+                                <!-- Billboard Type Column -->
+                                <td style="padding: 10px; border: 1px solid #000; text-align: center">
+                                    <span><span t-esc="line.billboard_id.media_type.name"/></span>
+                                </td>
+
+                                <!-- size Column -->
+                                <td style="padding: 10px; border: 1px solid #000; text-align: center">
+                                    <span t-esc="line.billboard_id.size"/>
+                                </td>
+
+                                <!-- unit Column -->
+                                <td style="padding: 10px; border: 1px solid #000; text-align: center">
+                                    <span t-esc="line.unit"/>
+                                </td>
+
+                                <!-- Size Column -->
+                                <td style="padding: 10px; border: 1px solid #000; text-align: center">
+                                    <span t-esc="line.faces"/>
+                                </td>
+
+                                <!-- Conditionally Render Flight Cost -->
+                                <td t-if="line.flighting_cost"
+                                    style="padding: 10px; border: 1px solid #000; text-align: center">
+                                    <span t-esc="'{:,.2f}'.format(float(line.flighting_cost))" />
+                                </td>
+
+                                <!-- Conditionally Render Material Printing Cost -->
+                                <td t-if="line.material_cost"
+                                    style="padding: 10px; border: 1px solid #000; text-align: center">
+                                    <span t-esc="'{:,.2f}'.format(float(line.material_cost))" />
+                                </td>
+
+                                <!-- Conditionally Render Rental Per Month -->
+                                <td t-if="line.rental_per_month"
+                                    style="padding: 10px; border: 1px solid #000; text-align: center">
+                                    <span t-esc="'{:,.2f}'.format(float(line.rental_per_month))" />
+                                </td>
+                                <!-- Conditionally Render No of Months -->
+                                <td t-if="line.no_of_months"
+                                    style="padding: 10px; border: 1px solid #000; text-align: right">
+                                    <span t-esc="line.no_of_months"/>
+                                </td>
+
+
+                                <!-- Cost Subtotal Column -->
+                                <td style="padding: 10px; border: 1px solid #000; text-align: right">
+                                    <span t-esc="'{:,.2f}'.format(float(line.cost_subtotal))" />
+                                </td>
+                            </tr>
+
+                            <!-- Increment Index -->
+                            <t t-set="index" t-value="index + 1"/>
+                        </t>
+                    </tbody>
+
+                </table>
+                <table class="table"
+                       style="width: 100%; border-collapse: collapse; font-family: 'Times New Roman', Times, serif; font-size: 10pt;">
+                    <tr>
+                        <td style="padding: 10px; width: 60%"></td>
+                        <td style="padding: 10px; width: 10%; font-weight: bold">SUB TOTAL</td>
+                        <td style="padding: 10px; width: 3%; text-align: right; font-weight: bold">
+                            <span t-esc="'{:,.2f}'.format(float(o.sub_total))" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; width: 60%"></td>
+                        <td style="padding: 10px; font-weight: bold">VAT 18%</td>
+                        <td style="padding: 10px; width: 3%; ; text-align: right; font-weight: bold"><span t-esc="'{:,.2f}'.format(float(o.vat))" /></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; width: 60%"></td>
+                        <td style="padding: 10px; width: 10%; font-weight: bold">GRAND TOTAL</td>
+                        <td style="padding: 10px; width: 3%; text-align: right; font-weight: bold;"><span t-esc="'{:,.2f}'.format(float(o.amount_total))" /></td>
+                    </tr>
+                </table>
+
+
+                <div style="margin-top: 40px; font-weight: bold">
+                    <p>Prepared By:  .........................................................</p> <br/>
+                    <p>Approved By:  .........................................................</p>
+                </div>
+
+            </t>
+        </t>
+    </template>
+</odoo>
