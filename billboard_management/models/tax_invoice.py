@@ -18,9 +18,9 @@ class TaxInvoice(models.Model):
     customer_id = fields.Many2one('res.partner', string='Customer', required=True)
     date = fields.Date(string='Date', required=True)
     payment_term = fields.Many2one(comodel_name="account.payment.term", string='Payment Terms', required=False)
-    sub_total = fields.Float(string='Sub total', compute='_compute_sub_cost')
-    vat = fields.Float(string='VAT 18%', compute="vat_compute")
-    amount_total = fields.Float(string='Grand Total', compute="compute_grand_total")
+    sub_total = fields.Float(string='Sub total', compute='_compute_sub_cost', store=True)
+    vat = fields.Float(string='VAT 18%', compute="vat_compute", store=True)
+    amount_total = fields.Float(string='Grand Total', compute="compute_grand_total", store=True)
     company_id = fields.Many2one('res.company', string="Company", default=lambda self: self.env.company)
 
     tax_invoice_line_ids = fields.One2many(comodel_name="tax.invoice.line",
@@ -88,7 +88,10 @@ class TaxInvoice(models.Model):
             'invoice_origin': self.name,
             # Get default sales journal
             'invoice_line_ids': [(0, 0, {
-                'product_id': 7,  # Assuming you have product in billboard
+                # 'product_id': 7,  # Assuming you have product in billboard
+                'product_id': self.env['product.template'].search([
+                    ('billboard_ref', '=', line.billboard_id.billboard_ref)
+                ], limit=1).id,
                 'name': line.billboard_id.name or 'Billboard service',
                 'quantity': 1,
                 'price_unit': self.sub_total,  # Assuming price from rental per month
@@ -151,7 +154,7 @@ class TaxInvoiceLines(models.Model):
     flighting_cost = fields.Float(string='Flighting Cost', required=False)
     no_of_months = fields.Integer(string='No of Month', required=False)
     rental_per_month = fields.Float(string='Rental Price')
-    cost_subtotal = fields.Float(string='Total Cost', compute='_cost_subtotal_compute')
+    cost_subtotal = fields.Float(string='Total Cost', compute='_cost_subtotal_compute', store=True)
 
     tax_invoice_id = fields.Many2one(comodel_name="tax.invoice", string="Billboard ID",
                                      required=False)
@@ -165,5 +168,5 @@ class TaxInvoiceLines(models.Model):
             #                     (rec.no_of_months if rec.no_of_months != 0 else 1) * \
             #                     (rec.rental_per_month if rec.rental_per_month != 0 else 1)
 
-            rec.cost_subtotal = rec.unit * rec.faces * (
-                    rec.material_cost + rec.flighting_cost + rec.no_of_months + rec.rental_per_month)
+            rec.cost_subtotal = rec.unit * (rec.faces if rec.faces != 0 else 1) * rec.no_of_months * (
+                    rec.material_cost + rec.flighting_cost + rec.rental_per_month)

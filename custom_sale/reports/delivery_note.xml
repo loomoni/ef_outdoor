@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="delivery_note_print_pdf">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="page">
+                    <!-- Logo and Company Information -->
+                    <!--                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">-->
+                    <!--                        &lt;!&ndash; Company Information aligned to the left &ndash;&gt;-->
+                    <!--                        <div style="text-align: left;">-->
+                    <!--                            <strong>Halleluya Tower Kajengee Road, Kijitonyama</strong>-->
+                    <!--                            <br/>-->
+                    <!--                            P.O Box 38555 Dar es Salaam, Tanzania-->
+                    <!--                            <br/>-->
+                    <!--                            <strong>Phone:</strong>-->
+                    <!--                            +255 767 532 857 / 767 532 858-->
+                    <!--                            <br/>-->
+                    <!--                            <strong>Email:</strong>-->
+                    <!--                            info@efoutdoor.com-->
+                    <!--                            <br/>-->
+                    <!--                            <strong>Website:</strong>-->
+                    <!--                            www.efoutdoor.com-->
+                    <!--                        </div>-->
+
+                    <!--                        &lt;!&ndash; Logo aligned to the right &ndash;&gt;-->
+                    <!--                        <div style="text-align: right;">-->
+                    <!--                            <img t-if="o.company_id.logo"-->
+                    <!--                                 t-att-src="'data:image/png;base64,'+o.company_id.logo.decode('utf-8')"-->
+                    <!--                                 alt="Company Logo"/>-->
+                    <!--                        </div>-->
+                    <!--                    </div>-->
+
+
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                        <!-- Company Information aligned to the left -->
+                                <!-- Logo aligned to the right -->
+                        <div style="text-align: right;">
+                            <img t-if="o.company_id.logo"
+                                 t-att-src="'data:image/png;base64,'+o.company_id.logo.decode('utf-8')"
+                                 alt="Company Logo"
+                                 style="max-height: 100px; margin-top: 0;"/>
+                        </div>
+
+                        <div style="text-align: left; max-width: 70%;">
+                            <strong>Halleluya Tower Kajengee Road, Kijitonyama</strong>
+                            <div>P.O Box 38555 Dar es Salaam, Tanzania</div>
+                            <div>
+                                <strong>Phone:</strong>
+                                +255 767 532 857 / 767 532 858
+                            </div>
+                            <div>
+                                <strong>Email:</strong>
+                                info@efoutdoor.com
+                            </div>
+                            <div>
+                                <strong>Website:</strong>
+                                www.efoutdoor.com
+                            </div>
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- Heavy black horizontal line -->
+                    <hr style="border: 3px solid black; margin-top: 20px;"/>
+
+
+                    <!-- Title -->
+                    <h2 style="text-align: center; margin-top: 20px;">DELIVERY NOTE</h2>
+
+                    <!-- Information Table -->
+                    <table style="width: 100%; margin-bottom: 20px;">
+                        <tr>
+                            <td>
+                                <strong>TO:</strong>
+                                <span t-field="o.partner_id.name"/>
+                            </td>
+                            <td>
+                                <strong>Your Order Number:</strong>
+                                <span t-field="o.origin"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Address:</strong>
+                                <span t-field="o.partner_id.street"/>
+                            </td>
+                            <td>
+                                <strong>Date Sent:</strong>
+                                <span t-field="o.scheduled_date"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>TIN:</strong>
+                                <span t-field="o.partner_id.vat"/>
+                            </td>
+                            <td>
+                                <strong>Our Contact Person:</strong>
+                                <span t-field="o.user_id.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>VRN:</strong>
+                                ________
+                            </td>
+                            <td>
+                                <strong>Telephone:</strong>
+                                <span t-field="o.partner_id.phone"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Attention:</strong>
+                                <span t-field="o.partner_id.name"/>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Delivered Items Table -->
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid black;">
+                                <th style="border: 1px solid black; padding: 5px;">Quantity Delivered</th>
+                                <th style="border: 1px solid black; padding: 5px;">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="o.move_lines" t-as="line">
+                                <tr>
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="line.product_uom_qty"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="line.product_id.display_name"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <!-- Goods Received Signature Section -->
+                    <table style="width: 100%; border-collapse: collapse;  border: 1px solid black; padding: 5px;">
+                        <tr>
+                            <td style="border: 1px solid black; padding: 10px" colspan="3">
+                                <strong>Goods received in good order</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 20px">
+                                <strong>Name:</strong>
+                                _____________________
+                            </td>
+                            <td style="padding: 20px">
+                                <strong>Signature:</strong>
+                                __________________
+                            </td>
+                            <td style="padding: 20px">
+                                <strong>Date:</strong>
+                                ______________________
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

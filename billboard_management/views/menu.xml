@@ -1,5 +1,9 @@
 <odoo>
-    <menuitem id="billboard_management_menu" name="Billboard" sequence="10"/>
+    <menuitem
+            id="billboard_management_menu"
+            web_icon="billboard_management,static/description/icon.png"
+            name="Billboard"
+            sequence="10"/>
 
     <!--    <menuitem id="billboard_menu" name="Billboards" parent="" sequence="10"/>-->
 
@@ -9,7 +13,9 @@
         <field name="view_mode">kanban,tree,form</field>
     </record>
 
-    <menuitem id="billboard_management_menuitem" name="Billboards" parent="billboard_management_menu"
+    <menuitem id="billboard_management_menuitem"
+              name="Billboards"
+              parent="billboard_management_menu"
               action="action_billboard" sequence="10"/>
 
     <!--    Contract Menu -->

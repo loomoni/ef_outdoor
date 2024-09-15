@@ -57,18 +57,85 @@
         </field>
     </record>
 
+    <!--    <record id="view_billboard_form" model="ir.ui.view">-->
+    <!--        <field name="name">billboard.form</field>-->
+    <!--        <field name="model">billboard.management</field>-->
+    <!--        <field name="arch" type="xml">-->
+    <!--            <form string="Billboard">-->
+    <!--                <sheet>-->
+    <!--                    <group>-->
+    <!--                        <group>-->
+    <!--                            <field name="image_small" widget="image"/>-->
+    <!--                        </group>-->
+
+    <!--                    </group>-->
+    <!--                    <group>-->
+    <!--                        <group>-->
+    <!--                            <field name="name"/>-->
+    <!--                            <field name="media_type"/>-->
+    <!--                        </group>-->
+    <!--                        <group>-->
+    <!--                            <field name="size"/>-->
+    <!--                            <field name="rental_price"/>-->
+    <!--                        </group>-->
+
+    <!--                    </group>-->
+    <!--                    <group>-->
+    <!--                        <group>-->
+    <!--                            <field name="location"/>-->
+    <!--                            <field name="region"/>-->
+
+    <!--                        </group>-->
+    <!--                        <group>-->
+    <!--                            <field name="billboard_ref"/>-->
+    <!--                            <field name="availability"/>-->
+    <!--                        </group>-->
+
+    <!--                    </group>-->
+    <!--                </sheet>-->
+    <!--                <div class="oe_chatter">-->
+    <!--                    <field name="message_follower_ids" widget="mail_followers"/>-->
+    <!--                    <field name="activity_ids" widget="mail_activity"/>-->
+    <!--                    <field name="message_ids" widget="mail_thread"/>-->
+    <!--                </div>-->
+    <!--            </form>-->
+    <!--        </field>-->
+    <!--    </record>-->
+
+
     <record id="view_billboard_form" model="ir.ui.view">
         <field name="name">billboard.form</field>
         <field name="model">billboard.management</field>
         <field name="arch" type="xml">
             <form string="Billboard">
-                <sheet>
-                      <group>
-                            <group>
-                                <field name="image_small" widget="image"/>
-                            </group>
+<!--                <header>-->
 
+
+                    <!-- Smart Button for Total Cash Amount -->
+<!--                    <button name="" type="object" string="Total Cash"-->
+<!--                            icon="" class="oe_stat_button">-->
+<!--                        <field name="" widget="monetary" options="{'currency_field': 'currency_id'}"/>-->
+<!--                    </button>-->
+<!--                </header>-->
+
+                <sheet>
+
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Smart Button for Total Bookings -->
+                        <button name="action_view_bookings" type="object" class="oe_stat_button" icon="fa-book">
+                            <field name="total_booked_count" string="Booked" widget="statinfo"/>
+                        </button>
+
+                        <button name="action_view_bookings" type="object" class="oe_stat_button" icon="fa-money">
+                            <field name="total_amount_cash" string="Cash" widget="statinfo"/>
+                        </button>
+
+                    </div>
+                    <group>
+                        <group>
+                            <field name="image_small" widget="image"/>
                         </group>
+                    </group>
                     <group>
                         <group>
                             <field name="name"/>
@@ -78,26 +145,40 @@
                             <field name="size"/>
                             <field name="rental_price"/>
                         </group>
-
                     </group>
                     <group>
                         <group>
                             <field name="location"/>
                             <field name="region"/>
-
                         </group>
                         <group>
+                            <field name="billboard_ref"/>
                             <field name="availability"/>
                         </group>
-
                     </group>
                 </sheet>
+
+                <!-- Mail Chatter -->
                 <div class="oe_chatter">
                     <field name="message_follower_ids" widget="mail_followers"/>
                     <field name="activity_ids" widget="mail_activity"/>
                     <field name="message_ids" widget="mail_thread"/>
                 </div>
             </form>
+        </field>
+    </record>
+
+
+    <!--    Inherit product template view  -->
+
+    <record id="view_product_template_form_inherited" model="ir.ui.view">
+        <field name="name">product.template.form.inherited</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='detailed_type']" position="after">
+                <field name="billboard_ref"/>
+            </xpath>
         </field>
     </record>
 </odoo>

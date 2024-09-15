@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_delivery_note_custom" inherit_id="stock.report_delivery_document" primary="True">
+        <xpath expr="//div[@class='page']" position="replace">
+            <div class="page">
+                <!-- Logo and Company Information -->
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="/custom_stock_picking_report/static/src/img/ef_outdoor_logo.png" alt="EF OUTDOOR" style="max-height: 100px;" />
+                    <div>
+                        <strong>Halleluya Tower Kajengee Road, Kijitonyama</strong><br/>
+                        P.O Box 38555 Dar es Salaam, Tanzania<br/>
+                        <strong>Phone:</strong> +255 767 532 857 / 767 532 858<br/>
+                        <strong>Email:</strong> info@efoutdoor.com<br/>
+                        <strong>Website:</strong> www.efoutdoor.com
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <h2 style="text-align: center;">DELIVERY NOTE</h2>
+
+                <!-- Information Table -->
+                <table style="width: 100%; margin-bottom: 20px;">
+                    <tr>
+                        <td><strong>FROM:</strong> <span t-field="o.partner_id.name"/></td>
+                        <td><strong>Your Order Number:</strong> <span t-field="o.origin"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Address:</strong> <span t-field="o.partner_id.street"/></td>
+                        <td><strong>Date Sent:</strong> <span t-field="o.scheduled_date"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>TIN:</strong> <span t-field="o.partner_id.vat"/></td>
+                        <td><strong>Our Contact Person:</strong> <span t-field="o.user_id.name"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>VRN:</strong> ________</td>
+                        <td><strong>Telephone:</strong> <span t-field="o.partner_id.phone"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Attention:</strong> <span t-field="o.partner_id.name"/></td>
+                    </tr>
+                </table>
+
+                <!-- Delivered Items Table -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid black;">
+                            <th style="border: 1px solid black; padding: 5px;">Quantity Delivered</th>
+                            <th style="border: 1px solid black; padding: 5px;">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.move_lines" t-as="line">
+                            <tr>
+                                <td style="border: 1px solid black; padding: 5px;">
+                                    <span t-field="line.product_uom_qty"/>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px;">
+                                    <span t-field="line.product_id.display_name"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- Goods Received Signature Section -->
+                <table style="width: 100%; border: 1px solid black; padding: 5px;">
+                    <tr>
+                        <td><strong>Goods received in good order</strong></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>Name:</strong> _____________________<br/>
+                            <strong>Signature:</strong> __________________<br/>
+                            <strong>Date:</strong> ______________________
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </xpath>
+    </template>
+</odoo>

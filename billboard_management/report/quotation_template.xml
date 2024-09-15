@@ -138,7 +138,7 @@
                             <th style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
                                 Units
                             </th>
-                            <th style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
+                            <th t-if="any(line.faces for line in o.billboard_quotation_line_ids)" style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
                                 Faces
                             </th>
 
@@ -203,7 +203,7 @@
                                 </td>
 
                                 <!-- Size Column -->
-                                <td style="padding: 10px; border: 1px solid #000; text-align: center">
+                                <td t-if="line.faces" style="padding: 10px; border: 1px solid #000; text-align: center">
                                     <span t-esc="line.faces"/>
                                 </td>
 

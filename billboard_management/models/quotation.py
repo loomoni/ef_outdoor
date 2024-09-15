@@ -173,9 +173,8 @@ class BillboardQuotationLines(models.Model):
             #                     (rec.material_cost if rec.material_cost != 0 else 1) * \
             #                     (rec.no_of_months if rec.no_of_months != 0 else 1) * \
             #                     (rec.rental_per_month if rec.rental_per_month != 0 else 1)
-            rec.cost_subtotal = rec.unit * rec.faces * (
-                        rec.material_cost + rec.flighting_cost + rec.no_of_months + rec.rental_per_month)
-            # if rec.unit > 0:
-            # rec.cost_subtotal = rec.unit * rec.faces * (rec.material_cost + 1) * (rec.no_of_months + 1) * (rec.rental_per_month +1)
-            # else:
-            #     rec.cost_subtotal = rec.faces * rec.material_cost * rec.no_of_months * rec.rental_per_month
+            rec.cost_subtotal = rec.unit * (rec.faces if rec.faces != 0 else 1) * rec.no_of_months * (
+                        rec.material_cost + rec.flighting_cost + rec.rental_per_month)
+            # if rec.unit > 0: rec.cost_subtotal = rec.unit * rec.faces * (rec.material_cost + 1) * (rec.no_of_months
+            # + 1) * (rec.rental_per_month +1) else: rec.cost_subtotal = rec.faces * rec.material_cost *
+            # rec.no_of_months * rec.rental_per_month
