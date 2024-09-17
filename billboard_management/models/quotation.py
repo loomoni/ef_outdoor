@@ -100,6 +100,7 @@ class BillboardQuotation(models.Model):
 
         tax_invoice_vals = {
             'customer_id': self.customer_id.id,
+            'state': 'confirmed',
             'date': fields.Date.today(),
             # 'payment_term': self.payment_term.id if self.payment_term_id else False,
             'tax_invoice_line_ids': tax_invoice_lines,

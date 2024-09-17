@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-
     <record id="view_tax_invoice_tree" model="ir.ui.view">
         <field name="name">tax.invoice.tree</field>
         <field name="model">tax.invoice</field>
         <field name="arch" type="xml">
-            <tree string="Tax Invoices">
+            <tree string="Confirmed orders">
                 <field name="name"/>
                 <field name="customer_id"/>
-                <field name="date" string="Invoice Date"/>
+                <field name="date" string="Order Date"/>
                 <field name="vat" string="Untaxed Amount"/>
                 <field name="amount_total"/>
                 <field name="state"/>
@@ -21,14 +20,16 @@
         <field name="name">tax.invoice.form</field>
         <field name="model">tax.invoice</field>
         <field name="arch" type="xml">
-            <form string="Tax Invoice">
+            <form string="Confirmed orders">
                 <header>
                     <button name="action_cancel_quotation" string="Cancel" states="draft,sent,confirmed,"
                             type="object"/>
-                    <button name="action_confirm_invoice" string="Confirm" class="oe_highlight" states="draft,sent"
-                            type="object"/>
+                    <button name="action_create_invoice" string="Create Invoice" class="oe_highlight" states="confirmed"
+                            type="object" attrs="{'invisible': [('amount_due', '=', 0)]}"/>
+                    <!--                    <button name="compute_total_amount_paid" string="Amount Due" class="oe_highlight" states="confirmed"-->
+                    <!--                            type="object" attrs="{'invisible': [('amount_due', '=', 0)]}"/>-->
                     <field name="state" widget="statusbar"
-                           statusbar_visible="draft,confirmed,cancelled"/>
+                           statusbar_visible="draft,partial,paid,confirmed,cancelled"/>
                 </header>
                 <sheet>
                     <group>
@@ -63,6 +64,9 @@
                         <field name="vat"/>
                         <field name="amount_total" class="oe_subtotal_footer_separator" widget="monetary"
                                options="{'currency_field': 'currency_id'}"/>
+                        <field name="total_amount_paid"/>
+                        <field name="amount_due" class="oe_subtotal_footer_separator" widget="monetary"
+                               options="{'currency_field': 'currency_id'}"/>
                     </group>
 
                 </sheet>
@@ -75,5 +79,38 @@
             </form>
         </field>
     </record>
+
+    <!--    Inherit accounting move lines-->
+
+<!--    <record id="view_move_form_inherit_custom" model="ir.ui.view">-->
+<!--        <field name="name">account.move.form.custom</field>-->
+<!--        <field name="model">account.move</field>-->
+<!--        <field name="inherit_id" ref="account.view_move_form"/>  &lt;!&ndash; Refers to the main account.move form &ndash;&gt;-->
+<!--        <field name="arch" type="xml">-->
+<!--            &lt;!&ndash; Modify the tree structure of the invoice_line_ids field &ndash;&gt;-->
+<!--            <xpath expr="//field[@name='invoice_line_ids']/tree" position="inside">-->
+<!--                &lt;!&ndash; Insert fields directly after quantity &ndash;&gt;-->
+<!--                <field name="faces" string="Faces" optional="hide"/>-->
+<!--                <field name="material_cost" string="Material Cost"  optional="hide"/>-->
+<!--                <field name="flighting_cost" string="Flighting Cost" optional="hide"/>-->
+<!--            </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
+
+
+    <record id="view_move_line_form_custom" model="ir.ui.view">
+    <field name="name">account.move.line.form.custom</field>
+    <field name="model">account.move.line</field>
+    <field name="arch" type="xml">
+        <form>
+            <group>
+                <field name="no_faces"/>
+                <field name="cost_material"/>
+                <field name="cost_flighting"/>
+            </group>
+        </form>
+    </field>
+</record>
+
 
 </odoo>

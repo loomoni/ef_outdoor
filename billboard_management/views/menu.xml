@@ -44,12 +44,12 @@
     <!--    Tax Menu-->
 
     <record id="action_billboard_invoice" model="ir.actions.act_window">
-        <field name="name">Invoice</field>
+        <field name="name">Confirmed Order</field>
         <field name="res_model">tax.invoice</field>
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="billboard_tax_menu" name="Tax Invoice" parent="billboard_management_menu" action="action_billboard_invoice" sequence="15"/>
+    <menuitem id="billboard_tax_menu" name="Confirmed Orders" parent="billboard_management_menu" action="action_billboard_invoice" sequence="15"/>
 
     <!--    Configuration Menu -->
 
