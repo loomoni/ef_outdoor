@@ -16,6 +16,7 @@ class TaxInvoice(models.Model):
     name = fields.Char(string='Reference No', required=True, copy=False, readonly=True, index=True,
                        default=lambda self: 'New')
     customer_id = fields.Many2one('res.partner', string='Customer', required=True)
+    source = fields.Char(string="Source", readonly=True)
     date = fields.Date(string='Date', required=True)
     payment_term = fields.Many2one(comodel_name="account.payment.term", string='Payment Terms', required=False)
     sub_total = fields.Float(string='Sub total', compute='_compute_sub_cost', store=True)
@@ -109,8 +110,8 @@ class TaxInvoice(models.Model):
                 record.state = 'paid'
             elif 0 < record.amount_due < record.amount_total:
                 record.state = 'partial'
-            else:
-                record.state = 'confirmed'
+            # else:
+            #     record.state = 'confirmed'
 
     @api.model
     def create(self, vals):
@@ -137,6 +138,37 @@ class TaxInvoice(models.Model):
             }
 
             self.env['billboard.contract'].create(contract_vals)
+
+    #     Acutomatic create invoice
+        move_vals = {
+            'move_type': 'out_invoice',  # Assuming it's a customer invoice (sale type)
+            'partner_id': self.customer_id.id,
+            'invoice_date': fields.Date.context_today(self),
+            'invoice_date_due': self.date,  # Due date as per your `date` field or a payment term
+            'journal_id': self.env['account.journal'].search([('type', '=', 'sale')], limit=1).id,
+            'invoice_origin': self.name,
+            # Get default sales journal
+            'invoice_line_ids': [(0, 0, {
+                # 'product_id': 7,  # Assuming you have product in billboard
+                'product_id': self.env['product.template'].search([
+                    ('billboard_ref', '=', line.billboard_id.billboard_ref)
+                ], limit=1).id,
+                'name': line.billboard_id.name or 'Billboard service',
+                'quantity': line.no_of_months,
+                # 'price_unit': self.sub_total,  # Assuming price from rental per month
+                'price_unit': line.rental_per_month + 20,  # Assuming price from rental per month
+                # 'tax_ids': 1,
+                'tax_ids': [(6, 0, [
+                    self.env['account.tax'].search([('amount', '=', 18), ('type_tax_use', '=', 'sale')], limit=1).id])],
+                'account_id': self.env['account.account'].search([('user_type_id.type', '=', 'income')], limit=1).id,
+            }) for line in self.tax_invoice_line_ids]  # Create an invoice line for each line in the tax invoice
+        }
+
+        # Create the account.move entry
+        move = self.env['account.move'].create(move_vals)
+
+        # Optionally, post the invoice automatically
+        move.action_post()
 
     @api.depends('name')
     def action_create_invoice(self):
@@ -227,129 +259,131 @@ class TaxInvoiceLines(models.Model):
     @api.depends("unit", "faces", "flighting_cost", "material_cost", "no_of_months", "rental_per_month")
     def _cost_subtotal_compute(self):
         for rec in self:
+            rec.cost_subtotal = (rec.faces * rec.no_of_months * rec.rental_per_month) + (
+                    rec.material_cost + rec.flighting_cost)
             # rec.cost_subtotal = rec.unit * rec.faces * \
             #                     (rec.material_cost if rec.material_cost != 0 else 1) * \
             #                     (rec.flighting_cost if rec.flighting_cost != 0 else 1) * \
             #                     (rec.no_of_months if rec.no_of_months != 0 else 1) * \
             #                     (rec.rental_per_month if rec.rental_per_month != 0 else 1)
 
-            rec.cost_subtotal = rec.unit * (rec.faces if rec.faces != 0 else 1) * rec.no_of_months * (
-                    rec.material_cost + rec.flighting_cost + rec.rental_per_month)
+            # rec.cost_subtotal = rec.unit * (rec.faces if rec.faces != 0 else 1) * rec.no_of_months * (
+            #         rec.material_cost + rec.flighting_cost + rec.rental_per_month)
 
 
-class AccountMoveInherit(models.Model):
-    _inherit = 'account.move'
-
-    amount_untaxed = fields.Monetary(string='Untaxed Amount', store=True, readonly=True, compute='_compute_amount')
-    amount_tax = fields.Monetary(string='Taxes', store=True, readonly=True, compute='_compute_amount')
-    amount_total = fields.Monetary(string='Total', store=True, readonly=True, compute='_compute_amount')
-
-    @api.depends('invoice_line_ids.price_subtotal', 'invoice_line_ids.tax_ids', 'invoice_line_ids.price_total')
-    def _compute_amount(self):
-        for move in self:
-            untaxed_amount = 0.0
-            total_tax = 0.0
-            for line in move.invoice_line_ids:
-                # Accumulate the subtotal of each line for the untaxed amount
-                untaxed_amount += line.price_subtotal
-                # Accumulate the tax for each line
-                total_tax += sum(tax.amount for tax in line.tax_ids)
-
-            move.amount_untaxed = untaxed_amount
-            move.amount_tax = total_tax
-            # Calculate the total by adding untaxed amount and tax
-            move.amount_total = untaxed_amount + total_tax
-
-    @api.depends('amount_total')
-    def action_post(self):
-        # Call the original payment creation logic first
-        res = super(AccountMoveInherit, self).action_post()
-
-        for move in self:
-            tax_invoices = self.env['tax.invoice'].search([('name', '=', move.invoice_origin)])
-            # Check if the total amount exceeds the amount_due in tax.invoice
-            if move.amount_total > tax_invoices.amount_due:
-                raise ValidationError(
-                    "Total invoice amount can not be greater than amount due in confirmed sale order"
-                    # f"The total invoice amount ({total_invoice_amount}) cannot exceed the amount due ({tax_invoice.amount_due}) in the related tax invoice."
-                )
-
-            for record in tax_invoices:
-                # Search for all account.move records where invoice_origin matches the name in tax.invoice
-                account_moves = self.env['account.move'].search([('invoice_origin', '=', record.name)])
-
-                # Sum the relevant amount (either amount_total, amount_residual, or another field)
-                total_paid = sum(
-                    move.amount_total for move in account_moves)  # Amount paid = Total - Residual
-
-                # Update the total_amount_paid in tax.invoice
-                record.total_amount_paid = total_paid
-
-        return res
-
-    # @api.depends('invoice_line_ids.price_subtotal')
-    # def _compute_amount(self):
-    #     for move in self:
-    #         # Sum up price_subtotal for all lines
-    #         total_untaxed_amount = sum(line.price_subtotal for line in move.invoice_line_ids)
-    #         move.amount_untaxed = total_untaxed_amount
-    #         move.amount_tax = move.amount_untaxed * 0.18
-
-
-class AccountMoveLineInherit(models.Model):
-    _inherit = 'account.move.line'
-
-    # Define custom fields
-    currency_id = fields.Many2one('res.currency', string='Currency', required=True)
-    no_faces = fields.Integer(string='Faces', default=1, store=True)
-    cost_material = fields.Float(string='Material Cost', default=0.0, store=True)
-    cost_flighting = fields.Float(string='Flighting Cost', default=0.0, store=True)
-    quantity = fields.Integer(string='No of Month', default=1, store=True)
-    price_unit = fields.Float(string='Rental Price', default=1, store=True)
-    price_subtotal = fields.Float(
-        string='Subtotal',
-        readonly=True,
-        compute='_compute_price_subtotal',
-        store=True,
-        currency_field='currency_id'
-    )
-    untaxed_amount = fields.Float(
-        string='Untaxed Amount',
-        store=True,
-        readonly=True,
-        compute='_compute_untaxed_amount'
-    )
-
-    # @api.model
-    # def create(self, vals):
-    #     # Ensure custom fields are included when creating a new line
-    #     if 'no_faces' not in vals:
-    #         vals['no_faces'] = 1
-    #     if 'cost_material' not in vals:
-    #         vals['cost_material'] = 0.0
-    #     if 'flighting_cost' not in vals:
-    #         vals['flighting_cost'] = 0.0
-    #     return super(AccountMoveLineInherit, self).create(vals)
-    #
-    # def write(self, vals):
-    #     # Ensure custom fields are included when updating the line
-    #     if 'no_faces' not in vals:
-    #         vals['no_faces'] = self.no_faces
-    #     if 'cost_material' not in vals:
-    #         vals['cost_material'] = self.cost_material
-    #     if 'cost_flighting' not in vals:
-    #         vals['cost_flighting'] = self.cost_flighting
-    #     return super(AccountMoveLineInherit, self).write(vals)
-
-    @api.depends('no_faces', 'quantity', 'price_unit', 'cost_material', 'cost_flighting')
-    def _compute_price_subtotal(self):
-        for line in self:
-            # Subtotal calculation based on custom fields
-            line.price_subtotal = (line.no_faces * line.quantity * line.price_unit) + (
-                    line.cost_material + line.cost_flighting)
-
-    @api.depends('price_subtotal')
-    def _compute_untaxed_amount(self):
-        for line in self:
-            # Untaxed amount simply reflects the price subtotal
-            line.untaxed_amount = line.price_subtotal
+# class AccountMoveInherit(models.Model):
+#     _inherit = 'account.move'
+#
+#     amount_untaxed = fields.Monetary(string='Untaxed Amount', store=True, readonly=True, compute='_compute_amount')
+#     amount_tax = fields.Monetary(string='Taxes', store=True, readonly=True, compute='_compute_amount')
+#     amount_total = fields.Monetary(string='Total', store=True, readonly=True, compute='_compute_amount')
+#
+#     @api.depends('invoice_line_ids.price_subtotal', 'invoice_line_ids.tax_ids', 'invoice_line_ids.price_total')
+#     def _compute_amount(self):
+#         for move in self:
+#             untaxed_amount = 0.0
+#             total_tax = 0.0
+#             for line in move.invoice_line_ids:
+#                 # Accumulate the subtotal of each line for the untaxed amount
+#                 untaxed_amount += line.price_subtotal
+#                 # Accumulate the tax for each line
+#                 total_tax += sum(tax.amount for tax in line.tax_ids)
+#
+#             move.amount_untaxed = untaxed_amount
+#             move.amount_tax = total_tax
+#             # Calculate the total by adding untaxed amount and tax
+#             move.amount_total = untaxed_amount + total_tax
+#
+#     @api.depends('amount_total')
+#     def action_post(self):
+#         # Call the original payment creation logic first
+#         res = super(AccountMoveInherit, self).action_post()
+#
+#         for move in self:
+#             tax_invoices = self.env['tax.invoice'].search([('name', '=', move.invoice_origin)])
+#             # Check if the total amount exceeds the amount_due in tax.invoice
+#             if move.amount_total > tax_invoices.amount_due:
+#                 raise ValidationError(
+#                     "Total invoice amount can not be greater than amount due in confirmed sale order"
+#                     # f"The total invoice amount ({total_invoice_amount}) cannot exceed the amount due ({tax_invoice.amount_due}) in the related tax invoice."
+#                 )
+#
+#             for record in tax_invoices:
+#                 # Search for all account.move records where invoice_origin matches the name in tax.invoice
+#                 account_moves = self.env['account.move'].search([('invoice_origin', '=', record.name)])
+#
+#                 # Sum the relevant amount (either amount_total, amount_residual, or another field)
+#                 total_paid = sum(
+#                     move.amount_total for move in account_moves)  # Amount paid = Total - Residual
+#
+#                 # Update the total_amount_paid in tax.invoice
+#                 record.total_amount_paid = total_paid
+#
+#         return res
+#
+#     # @api.depends('invoice_line_ids.price_subtotal')
+#     # def _compute_amount(self):
+#     #     for move in self:
+#     #         # Sum up price_subtotal for all lines
+#     #         total_untaxed_amount = sum(line.price_subtotal for line in move.invoice_line_ids)
+#     #         move.amount_untaxed = total_untaxed_amount
+#     #         move.amount_tax = move.amount_untaxed * 0.18
+#
+#
+# class AccountMoveLineInherit(models.Model):
+#     _inherit = 'account.move.line'
+#
+#     # Define custom fields
+#     currency_id = fields.Many2one('res.currency', string='Currency', required=True)
+#     no_faces = fields.Integer(string='Faces', default=1, store=True)
+#     cost_material = fields.Float(string='Material Cost', default=0.0, store=True)
+#     cost_flighting = fields.Float(string='Flighting Cost', default=0.0, store=True)
+#     quantity = fields.Integer(string='No of Month', default=1, store=True)
+#     price_unit = fields.Float(string='Rental Price', default=1, store=True)
+#     price_subtotal = fields.Float(
+#         string='Subtotal',
+#         readonly=True,
+#         compute='_compute_price_subtotal',
+#         store=True,
+#         currency_field='currency_id'
+#     )
+#     untaxed_amount = fields.Float(
+#         string='Untaxed Amount',
+#         store=True,
+#         readonly=True,
+#         compute='_compute_untaxed_amount'
+#     )
+#
+#     # @api.model
+#     # def create(self, vals):
+#     #     # Ensure custom fields are included when creating a new line
+#     #     if 'no_faces' not in vals:
+#     #         vals['no_faces'] = 1
+#     #     if 'cost_material' not in vals:
+#     #         vals['cost_material'] = 0.0
+#     #     if 'flighting_cost' not in vals:
+#     #         vals['flighting_cost'] = 0.0
+#     #     return super(AccountMoveLineInherit, self).create(vals)
+#     #
+#     # def write(self, vals):
+#     #     # Ensure custom fields are included when updating the line
+#     #     if 'no_faces' not in vals:
+#     #         vals['no_faces'] = self.no_faces
+#     #     if 'cost_material' not in vals:
+#     #         vals['cost_material'] = self.cost_material
+#     #     if 'cost_flighting' not in vals:
+#     #         vals['cost_flighting'] = self.cost_flighting
+#     #     return super(AccountMoveLineInherit, self).write(vals)
+#
+#     @api.depends('no_faces', 'quantity', 'price_unit', 'cost_material', 'cost_flighting')
+#     def _compute_price_subtotal(self):
+#         for line in self:
+#             # Subtotal calculation based on custom fields
+#             line.price_subtotal = (line.no_faces * line.quantity * line.price_unit) + (
+#                     line.cost_material + line.cost_flighting)
+#
+#     @api.depends('price_subtotal')
+#     def _compute_untaxed_amount(self):
+#         for line in self:
+#             # Untaxed amount simply reflects the price subtotal
+#             line.untaxed_amount = line.price_subtotal

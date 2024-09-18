@@ -8,6 +8,7 @@
                 <field name="name"/>
                 <field name="billboard_id"/>
                 <field name="customer_id"/>
+                <field name="source"/>
                 <field name="start_date"/>
                 <field name="end_date"/>
                 <field name="state"/>
@@ -44,8 +45,16 @@
                             <field name="start_date"/>
                             <field name="end_date"/>
                         </group>
+                        <group>
+                            <field name="source"/>
+                        </group>
                     </group>
                 </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
             </form>
         </field>
     </record>

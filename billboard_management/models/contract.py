@@ -19,6 +19,7 @@ class BillboardContract(models.Model):
     customer_id = fields.Many2one('res.partner', string='Customer', required=True)
     start_date = fields.Date(string='Start Date', required=True)
     end_date = fields.Date(string='End Date', required=True)
+    source = fields.Char(string='Source', readonly=True, store=True)
     rental_price = fields.Float(string='Rental Price', related='billboard_id.rental_price')
     state = fields.Selection([
         ('draft', 'Draft'),

@@ -14,6 +14,7 @@
         'views/tax_invoice_views.xml',
         'views/configuration.xml',
         'views/remove_login_brand.xml',
+        'views/confirmed_orders.xml',
         'report/invoice_template.xml',
         'report/report.xml',
         'report/quotation_template.xml',

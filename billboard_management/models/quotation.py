@@ -1,6 +1,8 @@
 import base64
 from io import BytesIO
 
+from dateutil.relativedelta import relativedelta
+
 from odoo import models, fields, api
 
 
@@ -85,9 +87,9 @@ class BillboardQuotation(models.Model):
         self.state = 'confirmed'
 
         # Create tax invoice
-        tax_invoice_lines = []
+        confirmed_order_lines = []
         for line in self.billboard_quotation_line_ids:
-            tax_invoice_lines.append((0, 0, {
+            confirmed_order_lines.append((0, 0, {
                 'billboard_id': line.billboard_id.id,
                 'unit': line.unit,
                 'faces': line.faces,
@@ -98,33 +100,29 @@ class BillboardQuotation(models.Model):
                 'cost_subtotal': line.cost_subtotal,
             }))
 
-        tax_invoice_vals = {
+        confirmed_order_vals = {
             'customer_id': self.customer_id.id,
             'state': 'confirmed',
             'date': fields.Date.today(),
             # 'payment_term': self.payment_term.id if self.payment_term_id else False,
-            'tax_invoice_line_ids': tax_invoice_lines,
+            'confirmed_orders_line_ids': confirmed_order_lines,
         }
 
-        self.env['tax.invoice'].create(tax_invoice_vals)
+        self.env['confirmed.orders'].create(confirmed_order_vals)
 
+        # Automatic Create Contract
+        for line in self.billboard_quotation_line_ids:
+            contract_vals = {
+                'name': self.env['ir.sequence'].next_by_code('contract.sequence') or 'New',
+                'billboard_id': line.billboard_id.id,
+                'customer_id': self.customer_id.id,
+                'source': self.name,
+                'start_date': fields.Date.today(),  # Assuming the start date is today, can be customized
+                'end_date': fields.Date.today() + relativedelta(months=line.no_of_months),
+                # Calculating based on the number of months in the invoice line
+            }
 
-        # Automatically create a contract upon confirmation
-        # self.env['billboard.contract'].create({
-        #     'billboard_id': self.billboard_id.id,
-        #     'customer_id': self.customer_id.id,
-        #     'start_date': self.start_date,
-        #     'end_date': self.end_date,
-        #     'rental_price': self.rental_price,
-        # })
-
-        # self.env['billboard.contract'].create({
-        #     'billboard_id': self.billboard_id.id,
-        #     'customer_id': self.customer_id.id,
-        #     'start_date': self.start_date,
-        #     'end_date': self.end_date,
-        #     'rental_price': self.rental_price,
-        # })
+            self.env['billboard.contract'].create(contract_vals)
 
     def action_cancel_quotation(self):
         self.state = 'cancelled'
@@ -170,12 +168,14 @@ class BillboardQuotationLines(models.Model):
     @api.depends("unit", "faces", "flighting_cost", "material_cost", "no_of_months", "rental_per_month")
     def _cost_subtotal_compute(self):
         for rec in self:
+            rec.cost_subtotal = (rec.faces * rec.no_of_months * rec.rental_per_month) + (
+                    rec.material_cost + rec.flighting_cost)
             # rec.cost_subtotal = rec.unit * rec.faces * \
             #                     (rec.material_cost if rec.material_cost != 0 else 1) * \
             #                     (rec.no_of_months if rec.no_of_months != 0 else 1) * \
             #                     (rec.rental_per_month if rec.rental_per_month != 0 else 1)
-            rec.cost_subtotal = rec.unit * (rec.faces if rec.faces != 0 else 1) * rec.no_of_months * (
-                        rec.material_cost + rec.flighting_cost + rec.rental_per_month)
+            # rec.cost_subtotal = rec.unit * (rec.faces if rec.faces != 0 else 1) * rec.no_of_months * (
+            #         rec.material_cost + rec.flighting_cost + rec.rental_per_month)
             # if rec.unit > 0: rec.cost_subtotal = rec.unit * rec.faces * (rec.material_cost + 1) * (rec.no_of_months
             # + 1) * (rec.rental_per_month +1) else: rec.cost_subtotal = rec.faces * rec.material_cost *
             # rec.no_of_months * rec.rental_per_month
