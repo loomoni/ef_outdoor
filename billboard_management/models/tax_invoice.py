@@ -44,7 +44,7 @@ class TaxInvoice(models.Model):
         ('sent', 'Sent'),
         ('confirmed', 'Confirmed'),
         ('partial', 'Partial Paid'),
-        ('paid', 'Paid'),
+        ('paid', 'Full Paid'),
         ('cancelled', 'Cancelled'),
     ], string='Status', default='draft')
 
@@ -137,19 +137,12 @@ class TaxInvoice(models.Model):
                     "Total invoice amount can not be greater than amount due in confirmed sale order"
                 )
 
-            # Search for all account.move records where invoice_origin matches the name in tax.invoice
-            account_moves = self.env['account.move'].search([('invoice_origin', '=', record.name)])
 
-            # Sum the relevant amount (either amount_total, amount_residual, or another field)
-            total_paid = sum(
-                move.amount_total for move in account_moves)  # Amount paid = Total - Residual
-
-            # Update the total_amount_paid in tax.invoice
-            record.total_amount_paid = total_paid
 
         move_vals = {
             'move_type': 'out_invoice',  # Assuming it's a customer invoice (sale type)
             'partner_id': self.customer_id.id,
+            'tax_invoice_ref': self.name,
             'invoice_date': fields.Date.context_today(self),
             'invoice_date_due': self.date,  # Due date as per your `date` field or a payment term
             'journal_id': self.env['account.journal'].search([('type', '=', 'sale')], limit=1).id,
@@ -194,6 +187,17 @@ class TaxInvoice(models.Model):
             'type': 'ir.actions.act_window',
             'target': 'current',
         }
+
+    def compute_amount_paid(self):
+        for record in self:
+            # Search for all account.move records where invoice_origin matches the name in tax.invoice
+            account_moves = self.env['account.move'].search([('tax_invoice_ref', '=', record.name)])
+
+            # Sum the relevant amount (either amount_total, amount_residual, or another field)
+            total_paid = sum(move.amount_total for move in account_moves)
+
+            # Update the total_amount_paid in tax.invoice
+            record.total_amount_paid = total_paid
 
     # def action_confirm_invoice(self):
     #     self.state = 'confirmed'
@@ -422,10 +426,12 @@ class TaxInvoiceLines(models.Model):
             #         rec.material_cost + rec.flighting_cost + rec.rental_per_month)
 
 
-# class AccountMoveInherit(models.Model):
-#     _inherit = 'account.move'
-#
-#     amount_untaxed = fields.Monetary(string='Untaxed Amount', store=True, readonly=True, compute='_compute_amount')
+class AccountMoveInherit(models.Model):
+    _inherit = 'account.move'
+
+    tax_invoice_ref = fields.Char(string='Tax Invoice Ref', store=True, readonly=True, )
+
+
 #     amount_tax = fields.Monetary(string='Taxes', store=True, readonly=True, compute='_compute_amount')
 #     amount_total = fields.Monetary(string='Total', store=True, readonly=True, compute='_compute_amount')
 #

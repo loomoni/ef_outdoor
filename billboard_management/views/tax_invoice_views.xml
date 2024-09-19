@@ -26,11 +26,11 @@
                     <button name="action_cancel_quotation" string="Cancel" states="draft,sent,confirmed,"
                             type="object"/>
                     <button name="action_confirm_invoice" string="Confirm" class="oe_highlight"
+                            states="draft"
+                            type="object"/>
+                    <button name="compute_amount_paid" string="Compute Amount Paid"
                             states=""
                             type="object"/>
-<!--                    <button name="action_create_invoice" string="Create Invoice" class="oe_highlight"-->
-<!--                            states="sent,confirmed,"-->
-<!--                            type="object" attrs="{'invisible': [('amount_due', '=', 0)]}"/>-->
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,partial,paid,confirmed,cancelled"/>
                 </header>
