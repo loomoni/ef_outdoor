@@ -26,7 +26,7 @@
                     <button name="action_cancel_quotation" string="Cancel" states="draft,sent,confirmed,"
                             type="object"/>
                     <button name="action_confirm_invoice" string="Confirm" class="oe_highlight"
-                            states="draft,sent"
+                            states=""
                             type="object"/>
 <!--                    <button name="action_create_invoice" string="Create Invoice" class="oe_highlight"-->
 <!--                            states="sent,confirmed,"-->
@@ -46,6 +46,10 @@
                             <field name="payment_term"/>
                         </group>
                     </group>
+                    <group>
+                        <field name="title"/>
+                    </group>
+
                     <notebook>
                         <page string="Invoice Lines">
                             <field name="tax_invoice_line_ids">

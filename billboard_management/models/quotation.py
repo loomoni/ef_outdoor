@@ -17,7 +17,7 @@ class BillboardQuotation(models.Model):
 
     customer_id = fields.Many2one('res.partner', string='Customer', required=True)
     date = fields.Date(string='Date', required=True)
-
+    title = fields.Text(string="Title", required=False, store=True)
     sub_total = fields.Float(string='Sub total', compute='_compute_sub_cost')
     vat = fields.Float(string='VAT 18%', compute="vat_compute")
     amount_total = fields.Float(string='Grand Total', compute="compute_grand_total")
@@ -102,6 +102,7 @@ class BillboardQuotation(models.Model):
 
         confirmed_order_vals = {
             'customer_id': self.customer_id.id,
+            'title': self.title,
             'state': 'confirmed',
             'date': fields.Date.today(),
             # 'payment_term': self.payment_term.id if self.payment_term_id else False,

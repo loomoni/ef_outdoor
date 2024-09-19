@@ -11,6 +11,8 @@
                 <field name="date" string="Order Date"/>
                 <field name="vat" string="Untaxed Amount"/>
                 <field name="amount_total"/>
+                <field name="total_amount_paid"/>
+                <field name="amount_due"/>
                 <field name="state"/>
             </tree>
         </field>
@@ -22,8 +24,8 @@
         <field name="arch" type="xml">
             <form string="Confirmed orders">
                 <header>
-                    <!--                    <button name="action_cancel_quotation" string="Cancel" states="draft,sent,confirmed,"-->
-                    <!--                            type="object"/>-->
+                    <button name="compute_total_amount_paid" string="Compute Amount Paid" states="confirmed"
+                            type="object"/>
                     <!--                    <button name="action_create_invoice" string="Create Invoice" class="oe_highlight" states="confirmed"-->
                     <!--                            type="object" attrs="{'invisible': [('amount_due', '=', 0)]}"/>-->
                     <button name="action_create_invoice" string="Create Invoice" class="oe_highlight" states="confirmed"

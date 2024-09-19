@@ -4,7 +4,7 @@ from io import BytesIO
 from dateutil.relativedelta import relativedelta
 
 from odoo import models, fields, api
-from odoo.exceptions import ValidationError, _logger
+from odoo.exceptions import ValidationError, _logger, UserError
 
 
 class TaxInvoice(models.Model):
@@ -17,6 +17,7 @@ class TaxInvoice(models.Model):
                        default=lambda self: 'New')
     customer_id = fields.Many2one('res.partner', string='Customer', required=True)
     source = fields.Char(string="Source", readonly=True)
+    title = fields.Text(string="Title", required=False, store=True)
     date = fields.Date(string='Date', required=True)
     payment_term = fields.Many2one(comodel_name="account.payment.term", string='Payment Terms', required=False)
     sub_total = fields.Float(string='Sub total', compute='_compute_sub_cost', store=True)
@@ -93,7 +94,7 @@ class TaxInvoice(models.Model):
     def compute_total_amount_paid(self):
         for record in self:
             # Search for all account.move records where invoice_origin matches the name in tax.invoice
-            account_moves = self.env['account.move'].search([('invoice_origin', '=', record.name)])
+            account_moves = self.env['account.move'].search([('invoice_origin', '=', record.source)])
 
             # Sum the relevant amount (either amount_total, amount_residual, or another field)
             total_paid = sum(
@@ -106,11 +107,11 @@ class TaxInvoice(models.Model):
     def _compute_total_amount_due(self):
         for record in self:
             record.amount_due = record.amount_total - record.total_amount_paid
-            if record.amount_due == 0:
+            if record.amount_due == 0 and record.amount_total == record.total_amount_paid:
                 record.state = 'paid'
             elif 0 < record.amount_due < record.amount_total:
                 record.state = 'partial'
-            # else:
+            # elif record.amount_total == record.amount_due:
             #     record.state = 'confirmed'
 
     @api.model
@@ -126,84 +127,63 @@ class TaxInvoice(models.Model):
     def action_confirm_invoice(self):
         self.state = 'confirmed'
 
-        # Create contract for each billboard in the invoice lines
-        for line in self.tax_invoice_line_ids:
-            contract_vals = {
-                'name': self.env['ir.sequence'].next_by_code('contract.sequence') or 'New',
-                'billboard_id': line.billboard_id.id,
-                'customer_id': self.customer_id.id,
-                'start_date': fields.Date.today(),  # Assuming the start date is today, can be customized
-                'end_date': fields.Date.today() + relativedelta(months=line.no_of_months),
-                # Calculating based on the number of months in the invoice line
-            }
+        # for move in self:
 
-            self.env['billboard.contract'].create(contract_vals)
+        for record in self:
+            confirmed_amount = self.env['confirmed.orders'].search([('name', '=', record.source)])
+            # Check if the total amount exceeds the amount_due in tax.invoice
+            if record.amount_total > confirmed_amount.amount_due:
+                raise ValidationError(
+                    "Total invoice amount can not be greater than amount due in confirmed sale order"
+                )
 
-    #     Acutomatic create invoice
+            # Search for all account.move records where invoice_origin matches the name in tax.invoice
+            account_moves = self.env['account.move'].search([('invoice_origin', '=', record.name)])
+
+            # Sum the relevant amount (either amount_total, amount_residual, or another field)
+            total_paid = sum(
+                move.amount_total for move in account_moves)  # Amount paid = Total - Residual
+
+            # Update the total_amount_paid in tax.invoice
+            record.total_amount_paid = total_paid
+
         move_vals = {
             'move_type': 'out_invoice',  # Assuming it's a customer invoice (sale type)
             'partner_id': self.customer_id.id,
             'invoice_date': fields.Date.context_today(self),
             'invoice_date_due': self.date,  # Due date as per your `date` field or a payment term
             'journal_id': self.env['account.journal'].search([('type', '=', 'sale')], limit=1).id,
-            'invoice_origin': self.name,
-            # Get default sales journal
-            'invoice_line_ids': [(0, 0, {
-                # 'product_id': 7,  # Assuming you have product in billboard
-                'product_id': self.env['product.template'].search([
-                    ('billboard_ref', '=', line.billboard_id.billboard_ref)
-                ], limit=1).id,
-                'name': line.billboard_id.name or 'Billboard service',
-                'quantity': line.no_of_months,
-                # 'price_unit': self.sub_total,  # Assuming price from rental per month
-                'price_unit': line.rental_per_month + 20,  # Assuming price from rental per month
-                # 'tax_ids': 1,
-                'tax_ids': [(6, 0, [
-                    self.env['account.tax'].search([('amount', '=', 18), ('type_tax_use', '=', 'sale')], limit=1).id])],
-                'account_id': self.env['account.account'].search([('user_type_id.type', '=', 'income')], limit=1).id,
-            }) for line in self.tax_invoice_line_ids]  # Create an invoice line for each line in the tax invoice
+            'invoice_origin': self.source,
+            'invoice_line_ids': [
+                (0, 0, {
+                    'product_id': self.env['product.template'].search([
+                        ('billboard_ref', '=', line.billboard_id.billboard_ref)
+                    ], limit=1).id,
+                    'name': line.billboard_id.name or 'Billboard service',
+                    'quantity': line.no_of_months,
+                    'price_unit': (line.rental_per_month * line.faces) + (line.material_cost + line.flighting_cost),
+                    # 'quantity': float(line.no_of_months or 1),  # Quantity as float
+                    # 'price_unit': float(line.rental_per_month or 0.0),  # Ensure price_unit is float
+                    'tax_ids': [(6, 0, [
+                        self.env['account.tax'].search([
+                            ('amount', '=', 18),
+                            ('type_tax_use', '=', 'sale')
+                        ], limit=1).id
+                    ])],
+                    'account_id': self.env['account.account'].search([
+                        ('user_type_id.type', '=', 'income')
+                    ], limit=1).id,
+                }) for line in self.tax_invoice_line_ids
+            ]
         }
 
         # Create the account.move entry
         move = self.env['account.move'].create(move_vals)
 
-        # Optionally, post the invoice automatically
-        move.action_post()
+        # Optional: Post the invoice automatically after creating it
+        if move:
+            move.action_post()
 
-    @api.depends('name')
-    def action_create_invoice(self):
-        # Create an account.move (invoice) record
-        move_vals = {
-            'move_type': 'out_invoice',  # Assuming it's a customer invoice (sale type)
-            'partner_id': self.customer_id.id,
-            'invoice_date': fields.Date.context_today(self),
-            'invoice_date_due': self.date,  # Due date as per your `date` field or a payment term
-            'journal_id': self.env['account.journal'].search([('type', '=', 'sale')], limit=1).id,
-            'invoice_origin': self.name,
-            # Get default sales journal
-            'invoice_line_ids': [(0, 0, {
-                # 'product_id': 7,  # Assuming you have product in billboard
-                'product_id': self.env['product.template'].search([
-                    ('billboard_ref', '=', line.billboard_id.billboard_ref)
-                ], limit=1).id,
-                'name': line.billboard_id.name or 'Billboard service',
-                'quantity': 1,
-                # 'price_unit': self.sub_total,  # Assuming price from rental per month
-                'price_unit': 0,  # Assuming price from rental per month
-                # 'tax_ids': 1,
-                'tax_ids': [(6, 0, [
-                    self.env['account.tax'].search([('amount', '=', 18), ('type_tax_use', '=', 'sale')], limit=1).id])],
-                'account_id': self.env['account.account'].search([('user_type_id.type', '=', 'income')], limit=1).id,
-            }) for line in self.tax_invoice_line_ids]  # Create an invoice line for each line in the tax invoice
-        }
-
-        # Create the account.move entry
-        move = self.env['account.move'].create(move_vals)
-
-        # Optionally, post the invoice automatically
-        # move.action_post()
-
-        # return move  # Return the created move if needed
         # Return an action to open the created invoice form view
         return {
             'name': 'Invoice',
@@ -214,6 +194,177 @@ class TaxInvoice(models.Model):
             'type': 'ir.actions.act_window',
             'target': 'current',
         }
+
+    # def action_confirm_invoice(self):
+    #     self.state = 'confirmed'
+    #
+    #     # Prepare move (invoice) values
+    #     move_vals = {
+    #         'move_type': 'out_invoice',  # Customer invoice (sale type)
+    #         'partner_id': self.customer_id.id,  # Customer on the tax invoice
+    #         'invoice_date': fields.Date.context_today(self),  # Current date as invoice date
+    #         'invoice_date_due': self.date,  # Due date from tax invoice
+    #         'journal_id': self.env['account.journal'].search([('type', '=', 'sale')], limit=1).id,  # Sales journal
+    #         'invoice_origin': self.name,  # Reference from the tax invoice
+    #         'invoice_line_ids': []
+    #     }
+    #
+    #     # Loop through each tax invoice line and create the corresponding account.move lines
+    #     for line in self.tax_invoice_line_ids:
+    #         # Get the product linked to the billboard (adjust the domain if needed)
+    #         product = self.env['product.template'].search([
+    #             ('billboard_ref', '=', line.billboard_id.billboard_ref)
+    #         ], limit=1)
+    #
+    #         # Raise an error if no product is found to ensure correctness
+    #         if not product:
+    #             raise UserError('No product found for billboard %s' % line.billboard_id.name)
+    #
+    #         # Prepare invoice line values
+    #         invoice_line_vals = {
+    #             'product_id': product.id,  # Product linked to the billboard
+    #             'name': line.billboard_id.name or 'Billboard service',  # Line description
+    #             'quantity': float(line.no_of_months or 1),  # Quantity is number of months
+    #             'price_unit': line.rental_per_month or 0.0,  # Price is rental per month
+    #             'tax_ids': [(6, 0, [self.env['account.tax'].search([
+    #                 ('amount', '=', 18),
+    #                 ('type_tax_use', '=', 'sale')
+    #             ], limit=1).id])],  # 18% VAT tax
+    #             'account_id': self.env['account.account'].search([
+    #                 ('user_type_id.type', '=', 'income')  # Income account
+    #             ], limit=1).id,
+    #         }
+    #
+    #         # Append the invoice line to the move
+    #         move_vals['invoice_line_ids'].append((0, 0, invoice_line_vals))
+    #
+    #     # Create the account.move entry (invoice)
+    #     move = self.env['account.move'].create(move_vals)
+    #
+    #     # Optional: Post the invoice automatically after creating it
+    #     # if move:
+    #     #     move.action_post()
+    #
+    #     return move
+
+    # def action_confirm_invoice(self):
+    #     self.state = 'confirmed'
+    #
+    #     move_vals = {
+    #         'move_type': 'out_invoice',  # Assuming it's a customer invoice (sale type)
+    #         'partner_id': self.customer_id.id,
+    #         'invoice_date': fields.Date.context_today(self),
+    #         'invoice_date_due': self.date,  # Due date as per your `date` field or a payment term
+    #         'journal_id': self.env['account.journal'].search([('type', '=', 'sale')], limit=1).id,
+    #         'invoice_origin': self.name,
+    #         # Get default sales journal
+    #         'invoice_line_ids': [(0, 0, {
+    #             # 'product_id': 7,  # Assuming you have product in billboard
+    #             'product_id': self.env['product.template'].search([
+    #                 ('billboard_ref', '=', line.billboard_id.billboard_ref)
+    #             ], limit=1).id,
+    #             'name': line.billboard_id.name or 'Billboard service',
+    #             'quantity': 1,
+    #             # 'price_unit': self.sub_total,  # Assuming price from rental per month
+    #             'price_unit': 3000,  # Assuming price from rental per month
+    #             # 'tax_ids': 1,
+    #             'tax_ids': [(6, 0, [
+    #                 self.env['account.tax'].search([('amount', '=', 18), ('type_tax_use', '=', 'sale')], limit=1).id])],
+    #             'account_id': self.env['account.account'].search([('user_type_id.type', '=', 'income')], limit=1).id,
+    #         }) for line in self.tax_invoice_line_ids]  # Create an invoice line for each line in the tax invoice
+    #     }
+    #
+    #     # Create the account.move entry
+    #     move = self.env['account.move'].create(move_vals)
+    #
+    #     # Create contract for each billboard in the invoice lines
+    #     # for line in self.tax_invoice_line_ids:
+    #     #     contract_vals = {
+    #     #         'name': self.env['ir.sequence'].next_by_code('contract.sequence') or 'New',
+    #     #         'billboard_id': line.billboard_id.id,
+    #     #         'customer_id': self.customer_id.id,
+    #     #         'start_date': fields.Date.today(),  # Assuming the start date is today, can be customized
+    #     #         'end_date': fields.Date.today() + relativedelta(months=line.no_of_months),
+    #     #         # Calculating based on the number of months in the invoice line
+    #     #     }
+    #     #
+    #     #     self.env['billboard.contract'].create(contract_vals)
+
+    #     Acutomatic create invoice
+    #     move_vals = {
+    #         'move_type': 'out_invoice',  # Assuming it's a customer invoice (sale type)
+    #         'partner_id': self.customer_id.id,
+    #         'invoice_date': fields.Date.context_today(self),
+    #         'invoice_date_due': self.date,  # Due date as per your `date` field or a payment term
+    #         'journal_id': self.env['account.journal'].search([('type', '=', 'sale')], limit=1).id,
+    #         'invoice_origin': self.name,
+    #         # Get default sales journal
+    #         'invoice_line_ids': [(0, 0, {
+    #             # 'product_id': 7,  # Assuming you have product in billboard
+    #             'product_id': self.env['product.template'].search([
+    #                 ('billboard_ref', '=', line.billboard_id.billboard_ref)
+    #             ], limit=1).id,
+    #             'name': line.billboard_id.name or 'Billboard service',
+    #             'quantity': line.no_of_months,
+    #             # 'price_unit': self.sub_total,  # Assuming price from rental per month
+    #             'price_unit': line.rental_per_month + 20,  # Assuming price from rental per month
+    #             # 'tax_ids': 1,
+    #             'tax_ids': [(6, 0, [
+    #                 self.env['account.tax'].search([('amount', '=', 18), ('type_tax_use', '=', 'sale')], limit=1).id])],
+    #             'account_id': self.env['account.account'].search([('user_type_id.type', '=', 'income')], limit=1).id,
+    #         }) for line in self.tax_invoice_line_ids]  # Create an invoice line for each line in the tax invoice
+    #     }
+
+    # Create the account.move entry
+    # move = self.env['account.move'].create(move_vals)
+
+    # Optionally, post the invoice automatically
+    # move.action_post()
+
+    # @api.depends('name')
+    # def action_create_invoice(self):
+    #     # Create an account.move (invoice) record
+    #     move_vals = {
+    #         'move_type': 'out_invoice',  # Assuming it's a customer invoice (sale type)
+    #         'partner_id': self.customer_id.id,
+    #         'invoice_date': fields.Date.context_today(self),
+    #         'invoice_date_due': self.date,  # Due date as per your `date` field or a payment term
+    #         'journal_id': self.env['account.journal'].search([('type', '=', 'sale')], limit=1).id,
+    #         'invoice_origin': self.name,
+    #         # Get default sales journal
+    #         'invoice_line_ids': [(0, 0, {
+    #             # 'product_id': 7,  # Assuming you have product in billboard
+    #             'product_id': self.env['product.template'].search([
+    #                 ('billboard_ref', '=', line.billboard_id.billboard_ref)
+    #             ], limit=1).id,
+    #             'name': line.billboard_id.name or 'Billboard service',
+    #             'quantity': 1,
+    #             # 'price_unit': self.sub_total,  # Assuming price from rental per month
+    #             'price_unit': 0,  # Assuming price from rental per month
+    #             # 'tax_ids': 1,
+    #             'tax_ids': [(6, 0, [
+    #                 self.env['account.tax'].search([('amount', '=', 18), ('type_tax_use', '=', 'sale')], limit=1).id])],
+    #             'account_id': self.env['account.account'].search([('user_type_id.type', '=', 'income')], limit=1).id,
+    #         }) for line in self.tax_invoice_line_ids]  # Create an invoice line for each line in the tax invoice
+    #     }
+    #
+    #     # Create the account.move entry
+    #     move = self.env['account.move'].create(move_vals)
+    #
+    #     # Optionally, post the invoice automatically
+    #     # move.action_post()
+    #
+    #     # return move  # Return the created move if needed
+    #     # Return an action to open the created invoice form view
+    #     return {
+    #         'name': 'Invoice',
+    #         'view_type': 'form',
+    #         'view_mode': 'form',
+    #         'res_model': 'account.move',
+    #         'res_id': move.id,
+    #         'type': 'ir.actions.act_window',
+    #         'target': 'current',
+    #     }
 
     def action_cancel_quotation(self):
         self.state = 'cancelled'
@@ -330,15 +481,15 @@ class TaxInvoiceLines(models.Model):
 #     #         move.amount_tax = move.amount_untaxed * 0.18
 #
 #
-# class AccountMoveLineInherit(models.Model):
-#     _inherit = 'account.move.line'
-#
-#     # Define custom fields
-#     currency_id = fields.Many2one('res.currency', string='Currency', required=True)
-#     no_faces = fields.Integer(string='Faces', default=1, store=True)
-#     cost_material = fields.Float(string='Material Cost', default=0.0, store=True)
-#     cost_flighting = fields.Float(string='Flighting Cost', default=0.0, store=True)
-#     quantity = fields.Integer(string='No of Month', default=1, store=True)
+class AccountMoveLineInherit(models.Model):
+    _inherit = 'account.move.line'
+    #
+    #     # Define custom fields
+    #     currency_id = fields.Many2one('res.currency', string='Currency', required=True)
+    #     no_faces = fields.Integer(string='Faces', default=1, store=True)
+    #     cost_material = fields.Float(string='Material Cost', default=0.0, store=True)
+    #     cost_flighting = fields.Float(string='Flighting Cost', default=0.0, store=True)
+    quantity = fields.Integer(string='No of Month', default=1, store=True)
 #     price_unit = fields.Float(string='Rental Price', default=1, store=True)
 #     price_subtotal = fields.Float(
 #         string='Subtotal',

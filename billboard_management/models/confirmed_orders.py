@@ -17,6 +17,7 @@ class ConfirmedOrders(models.Model):
                        default=lambda self: 'New')
     customer_id = fields.Many2one('res.partner', string='Customer', required=True)
     date = fields.Date(string='Date', required=True)
+    title = fields.Text(string="Title", required=False, store=True)
     payment_term = fields.Many2one(comodel_name="account.payment.term", string='Payment Terms', required=False)
     sub_total = fields.Float(string='Sub total', compute='_compute_sub_cost', store=True)
     vat = fields.Float(string='VAT 18%', compute="vat_compute", store=True)
@@ -42,7 +43,7 @@ class ConfirmedOrders(models.Model):
         ('sent', 'Sent'),
         ('confirmed', 'Confirmed'),
         ('partial', 'Partial Paid'),
-        ('paid', 'Paid'),
+        ('paid', 'Full Paid'),
         ('cancelled', 'Cancelled'),
     ], string='Status', default='draft')
 
@@ -95,6 +96,14 @@ class ConfirmedOrders(models.Model):
 
             # Update the total_amount_paid in tax.invoice
             record.total_amount_paid = total_paid
+        # for record in self:
+            record.amount_due = record.amount_total - record.total_amount_paid
+            if record.amount_due == 0:
+                record.state = 'paid'
+            elif 0 < record.amount_due < record.amount_total:
+                record.state = 'partial'
+            # else:
+                record.state = 'confirmed'
 
     @api.depends('amount_total', 'total_amount_paid')
     def _compute_total_amount_due(self):
@@ -130,6 +139,7 @@ class ConfirmedOrders(models.Model):
         invoice_vals = {
             'customer_id': self.customer_id.id,
             'source': self.name,
+            'title': self.title,
             'state': 'draft',
             'date': fields.Date.today(),
             'sub_total': self.sub_total,

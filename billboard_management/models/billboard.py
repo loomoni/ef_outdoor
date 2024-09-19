@@ -8,7 +8,7 @@ class Billboard(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = "id desc"
 
-    name = fields.Char(string='Name', required=True)
+    name = fields.Char(string='Face Name', required=True)
     image_small = fields.Binary("Image", attachment=True)
     location = fields.Char(string='Location', required=True)
     size = fields.Char(string='Size', required=True)

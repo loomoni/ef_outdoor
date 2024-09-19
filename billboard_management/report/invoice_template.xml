@@ -117,8 +117,13 @@
                     </tr>
 
                 </table>
-                <div style="text-align: center; padding: 10px; font-size: 28px; font-weight: bold; font-family: 'Calibri', Sans serif; ">
+                <div style="text-align: center; padding: 10px; font-size: 32px; font-weight: bold; font-family: 'Calibri', Sans serif; ">
                     TAX INVOICE
+                </div>
+                <div t-if="o.title" style="font-family: 'Calibri', Sans serif;">
+                    <div style="font-family: 'Calibri', Sans serif; font-weight: bold">
+                        REF: <span style="text-decoration: underline;" t-field="o.title"/>
+                    </div>
                 </div>
                 <table class="table"
                        style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Calibri', Sans serif; font-size: 12pt;">
@@ -139,7 +144,8 @@
                             <th style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
                                 Units
                             </th>
-                            <th t-if="any(line.faces for line in o.tax_invoice_line_ids)"  style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
+                            <th t-if="any(line.faces for line in o.tax_invoice_line_ids)"
+                                style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
                                 Faces
                             </th>
 
@@ -282,9 +288,9 @@
                 </div>
 
                 <div style="margin-top: 40px; font-weight: bold; font-family: 'Calibri', Sans serif;">
-                    <p>Prepared By:    ___________________________________________</p>
+                    <p>Prepared By: ___________________________________________</p>
                     <br/>
-                    <p>Approved By:    ___________________________________________</p>
+                    <p>Approved By: ___________________________________________</p>
                 </div>
 
             </t>
