@@ -16,7 +16,9 @@
     <menuitem id="billboard_management_menuitem"
               name="Billboards"
               parent="billboard_management_menu"
-              action="action_billboard" sequence="10"/>
+              action="action_billboard" sequence="10"
+              groups="billboard_management.billboard_administrator_access_group_id,billboard_management.billboard_sale_access_group_id"
+    />
 
     <!--    Contract Menu -->
 
@@ -28,7 +30,9 @@
     </record>
 
     <menuitem id="billboard_contract_menu" name="Contracts" parent="billboard_management_menu"
-              action="action_billboard_contract" sequence="20"/>
+              action="action_billboard_contract" sequence="20"
+    groups="billboard_management.billboard_administrator_access_group_id,billboard_management.billboard_sale_access_group_id"
+    />
 
 
     <!--    Quotation Menu-->
@@ -38,8 +42,13 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="billboard_quotation_menu" name="Proforma Invoice" parent="billboard_management_menu"
-              action="action_billboard_quotation" sequence="13"/>
+    <menuitem id="billboard_quotation_menu"
+              name="Proforma Invoice"
+              parent="billboard_management_menu"
+              action="action_billboard_quotation"
+              sequence="13"
+              groups="billboard_management.billboard_administrator_access_group_id,billboard_management.billboard_sale_access_group_id"
+    />
 
 
     <!--    Orders Menu-->
@@ -50,8 +59,12 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="billboard_orders_menu" name="Confirmed Orders" parent="billboard_management_menu"
-              action="action_billboard_confirmed_orders" sequence="14"/>
+    <menuitem id="billboard_orders_menu"
+              name="Confirmed Orders"
+              parent="billboard_management_menu"
+              action="action_billboard_confirmed_orders"
+              sequence="14"
+    />
 
     <!--    Tax Menu-->
 
@@ -61,12 +74,22 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="billboard_tax_menu" name="Tax Invoice" parent="billboard_management_menu"
-              action="action_billboard_invoice" sequence="15"/>
+    <menuitem id="billboard_tax_menu"
+              name="Tax Invoice"
+              parent="billboard_management_menu"
+              action="action_billboard_invoice"
+              sequence="15"
+              groups="billboard_management.billboard_administrator_access_group_id,billboard_management.billboard_account_access_group_id"
+    />
 
     <!--    Configuration Menu -->
 
-    <menuitem id="configuration_menu" name="Configuration" parent="billboard_management_menu" sequence="20"/>
+    <menuitem id="configuration_menu"
+              name="Configuration"
+              parent="billboard_management_menu"
+              sequence="20"
+              groups="billboard_management.billboard_administrator_access_group_id,billboard_management.billboard_sale_access_group_id"
+    />
 
     <!--    Region-->
     <record id="action_configuration_region" model="ir.actions.act_window">

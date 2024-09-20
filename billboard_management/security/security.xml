@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="model_category_billboard" model="ir.module.category">
+        <field name="name">Billboard Management</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="billboard_administrator_access_group_id" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="category_id" ref="model_category_billboard"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+
+    <record id="billboard_account_access_group_id" model="res.groups">
+        <field name="name">Accountant</field>
+        <field name="category_id" ref="model_category_billboard"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="billboard_sale_access_group_id" model="res.groups">
+        <field name="name">Sales</field>
+        <field name="category_id" ref="model_category_billboard"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+<!--    <record id="view_only_access_group_id" model="res.groups">-->
+<!--        <field name="name">View Only</field>-->
+<!--        <field name="category_id" ref="model_category_billboard"/>-->
+<!--        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>-->
+<!--    </record>-->
+
+</odoo>
+
+
+
