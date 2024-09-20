@@ -121,21 +121,6 @@ class ConfirmedOrders(models.Model):
         if self.amount_due == 0:
             raise UserError('Cannot create an invoice for an order with 0 amount due.')
 
-        for record in self:
-            # Assuming 'billboard_id' is the field pointing to the billboard in your model
-            if record.confirmed_orders_line_ids.billboard_id:
-                # Search for an active contract related to the billboard
-                active_contract = self.env['billboard.contract'].search([
-                    ('billboard_id', '=', record.confirmed_orders_line_ids.billboard_id.id),
-                    ('state', '=', 'active')  # Assuming 'state' tracks the status of the contract
-                ], limit=1)
-
-                if not active_contract:
-                    # No active contract found, raise an error to stop invoice creation
-                    raise UserError("The selected billboard has no active contract. Invoice creation is not allowed.")
-
-                # If there's an active contract, proceed with invoice creation
-
         # Prepare the invoice line data
         invoice_lines = []
         for line in self.confirmed_orders_line_ids:

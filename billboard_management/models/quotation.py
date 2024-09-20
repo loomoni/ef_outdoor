@@ -161,12 +161,13 @@ class BillboardQuotationLines(models.Model):
     material_cost = fields.Float(string='Material Cost', required=False)
     no_of_months = fields.Integer(string='No of Month', required=False)
     rental_per_month = fields.Float(string='Rental Price')
+    discount = fields.Float(string='Discount Price', default=0.0, store=True)
     cost_subtotal = fields.Float(string='Total Cost', compute='_cost_subtotal_compute')
 
     billboard_quotation_id = fields.Many2one(comodel_name="billboard.quotation", string="Billboard ID",
                                              required=False)
 
-    @api.depends("unit", "faces", "flighting_cost", "material_cost", "no_of_months", "rental_per_month")
+    @api.depends("unit", "faces", "flighting_cost", "discount", "material_cost", "no_of_months", "rental_per_month")
     def _cost_subtotal_compute(self):
         for rec in self:
             rec.cost_subtotal = (rec.faces * rec.no_of_months * rec.rental_per_month) + (
