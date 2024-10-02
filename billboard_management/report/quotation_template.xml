@@ -122,7 +122,7 @@
                 <div t-if="o.title" style="font-family: 'Calibri', Sans serif;">
                     <div style="font-family: 'Calibri', Sans serif; font-weight: bold">
                         REF:
-                         <span style="text-decoration: underline;" t-field="o.title"/>
+                        <span style="text-decoration: underline;" t-field="o.title"/>
                     </div>
                 </div>
                 <table class="table"
@@ -149,6 +149,12 @@
                                 Faces
                             </th>
 
+                            <!-- Conditionally Render No of Months Column -->
+                            <th t-if="any(line.no_of_months for line in o.billboard_quotation_line_ids)"
+                                style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
+                                No Months
+                            </th>
+
                             <!-- Conditionally Render flighting_cost Cost Column -->
                             <th t-if="any(line.flighting_cost for line in o.billboard_quotation_line_ids)"
                                 style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
@@ -166,12 +172,12 @@
                                 style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
                                 Rental / Month (TSH)
                             </th>
-
-                            <!-- Conditionally Render No of Months Column -->
-                            <th t-if="any(line.no_of_months for line in o.billboard_quotation_line_ids)"
+                            <!-- Conditionally Render Rental / Month Column -->
+                            <th t-if="any(line.discount for line in o.billboard_quotation_line_ids)"
                                 style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: center; font-weight: bold">
-                                No Months
+                                Disc. Rental / Month (TSH)
                             </th>
+
 
                             <!-- Total Cost Column -->
                             <th style="padding: 10px; border: 1px solid #000; background-color: #f2f2f2; text-align: right; font-weight: bold">
@@ -216,6 +222,12 @@
                                     <span t-esc="line.faces"/>
                                 </td>
 
+                                <!-- Conditionally Render No of Months -->
+                                <td t-if="line.no_of_months"
+                                    style="padding: 10px; border: 1px solid #000; text-align: right">
+                                    <span t-esc="line.no_of_months"/>
+                                </td>
+
                                 <!-- Conditionally Render Flight Cost -->
                                 <td t-if="line.flighting_cost"
                                     style="padding: 10px; border: 1px solid #000; text-align: center">
@@ -233,10 +245,11 @@
                                     style="padding: 10px; border: 1px solid #000; text-align: center">
                                     <span t-esc="'{:,.2f}'.format(float(line.rental_per_month))"/>
                                 </td>
-                                <!-- Conditionally Render No of Months -->
-                                <td t-if="line.no_of_months"
-                                    style="padding: 10px; border: 1px solid #000; text-align: right">
-                                    <span t-esc="line.no_of_months"/>
+
+                                <!-- Conditionally Render Rental Per Month -->
+                                <td t-if="line.discount"
+                                    style="padding: 10px; border: 1px solid #000; text-align: center">
+                                    <span t-esc="'{:,.2f}'.format(float(line.discount))"/>
                                 </td>
 
 
@@ -257,23 +270,64 @@
                     <tr>
                         <td style="padding: 10px; width: 60%"></td>
                         <td style="padding: 10px; width: 10%; font-weight: bold">SUB TOTAL</td>
-                        <td style="padding: 10px; width: 3%; text-align: right; font-weight: bold">
+                        <td style="padding: 10px; border-bottom: 2px solid #000;; solid #000; width: 3%; text-align: right; font-weight: bold">
+                            <span t-esc="'{:,.2f}'.format(float(o.sub_total_flight))"/>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000;  width: 3%; text-align: right; font-weight: bold">
+                            <span t-esc="'{:,.2f}'.format(float(o.sub_total_material))"/>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000;  width: 3%; text-align: right; font-weight: bold">
+                            <span t-esc="'{:,.2f}'.format(float(o.sub_total_rental))"/>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">
+                            <span t-esc="'{:,.2f}'.format(float(o.sub_total_discount))"/>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">
                             <span t-esc="'{:,.2f}'.format(float(o.sub_total))"/>
                         </td>
+
                     </tr>
                     <tr>
                         <td style="padding: 10px; width: 60%"></td>
                         <td style="padding: 10px; font-weight: bold">VAT 18%</td>
-                        <td style="padding: 10px; width: 3%; ; text-align: right; font-weight: bold">
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">
+                            <span t-esc="'{:,.2f}'.format(float(o.vat_flight))"/>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">
+                            <span t-esc="'{:,.2f}'.format(float(o.vat_material))"/>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">
+                            <span t-esc="'{:,.2f}'.format(float(o.vat_rental))"/>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">
+                            <span t-esc="'{:,.2f}'.format(float(o.vat_discount))"/>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">
                             <span t-esc="'{:,.2f}'.format(float(o.vat))"/>
                         </td>
+
                     </tr>
                     <tr>
                         <td style="padding: 10px; width: 60%"></td>
-                        <td style="padding: 10px; width: 20%; font-weight: bold; font-family: 'Calibri', Sans serif;">GRAND TOTAL</td>
-                        <td style="padding: 10px; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">
+                        <td style="padding: 10px; width: 20%; font-weight: bold; font-family: 'Calibri', Sans serif;">
+                            GRAND TOTAL
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">
+                            <span t-esc="'{:,.2f}'.format(float(o.amount_total_flight))"/>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">
+                            <span t-esc="'{:,.2f}'.format(float(o.amount_total_material))"/>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">
+                            <span t-esc="'{:,.2f}'.format(float(o.amount_total_rental))"/>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">
+                            <span t-esc="'{:,.2f}'.format(float(o.amount_total_discount))"/>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">
                             <span t-esc="'{:,.2f}'.format(float(o.amount_total))"/>
                         </td>
+
                     </tr>
                 </table>
 

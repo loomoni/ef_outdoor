@@ -18,9 +18,28 @@ class BillboardQuotation(models.Model):
     customer_id = fields.Many2one('res.partner', string='Customer', required=True)
     date = fields.Date(string='Date', required=True)
     title = fields.Text(string="Title", required=False, store=True)
+    po = fields.Char(string="PO", required=False, store=True)
+
     sub_total = fields.Float(string='Sub total', compute='_compute_sub_cost')
     vat = fields.Float(string='VAT 18%', compute="vat_compute")
     amount_total = fields.Float(string='Grand Total', compute="compute_grand_total")
+
+    sub_total_flight = fields.Float(string='Sub total', compute='_compute_sub_cost_flight')
+    vat_flight = fields.Float(string='VAT 18%', compute="vat_compute_flight")
+    amount_total_flight = fields.Float(string='Grand Total', compute="compute_grand_total_flight")
+
+    sub_total_material = fields.Float(string='Sub total', compute='_compute_sub_cost_material')
+    vat_material = fields.Float(string='VAT 18%', compute="vat_compute_material")
+    amount_total_material = fields.Float(string='Grand Total', compute="compute_grand_total_material")
+
+    sub_total_rental = fields.Float(string='Sub total', compute='_compute_sub_cost_rental')
+    vat_rental = fields.Float(string='VAT 18%', compute="vat_compute_rental")
+    amount_total_rental = fields.Float(string='Grand Total', compute="compute_grand_total_rental")
+
+    sub_total_discount = fields.Float(string='Sub total', compute='_compute_sub_cost_discount')
+    vat_discount = fields.Float(string='VAT 18%', compute="vat_compute_discount")
+    amount_total_discount = fields.Float(string='Grand Total', compute="compute_grand_total_discount")
+
     company_id = fields.Many2one('res.company', string="Company", default=lambda self: self.env.company)
 
     billboard_quotation_line_ids = fields.One2many(comodel_name="billboard.quotation.line",
@@ -33,28 +52,6 @@ class BillboardQuotation(models.Model):
         ('confirmed', 'Confirmed'),
         ('cancelled', 'Cancelled'),
     ], string='Status', default='draft')
-
-    # @api.model
-    # def company_info(self):
-    #     # Access the company of the current user
-    #     company = self.env.user.company_id
-    #
-    #     # Ensure the logo is base64-encoded and decode it if it exists
-    #     logo_data = base64.b64decode(company.logo) if company.logo else None
-    #
-    #     # Return company info including logo
-    #     return {
-    #         'name': company.name,
-    #         'vat': company.vat,
-    #         'regNo': company.company_registry,
-    #         'street': company.street,
-    #         'street2': company.street2,
-    #         'city': company.city,
-    #         'phone': company.phone,
-    #         'email': company.email,
-    #         'website': company.website,
-    #         'logo': BytesIO(logo_data) if logo_data else None,  # Handle cases where logo might not exist
-    #     }
 
     @api.model
     def company_info(self):
@@ -96,13 +93,14 @@ class BillboardQuotation(models.Model):
                 'material_cost': line.material_cost,
                 'flighting_cost': line.flighting_cost,
                 'no_of_months': line.no_of_months,
-                'rental_per_month': line.rental_per_month,
+                'rental_per_month': line.discount,
                 'cost_subtotal': line.cost_subtotal,
             }))
 
         confirmed_order_vals = {
             'customer_id': self.customer_id.id,
             'title': self.title,
+            'po': self.po,
             'state': 'confirmed',
             'date': fields.Date.today(),
             # 'payment_term': self.payment_term.id if self.payment_term_id else False,
@@ -118,6 +116,7 @@ class BillboardQuotation(models.Model):
                 'billboard_id': line.billboard_id.id,
                 'customer_id': self.customer_id.id,
                 'source': self.name,
+                'po': self.po,
                 'start_date': fields.Date.today(),  # Assuming the start date is today, can be customized
                 'end_date': fields.Date.today() + relativedelta(months=line.no_of_months),
                 # Calculating based on the number of months in the invoice line
@@ -142,6 +141,66 @@ class BillboardQuotation(models.Model):
     def compute_grand_total(self):
         for rec in self:
             rec.amount_total = rec.sub_total + rec.vat
+
+    @api.depends('billboard_quotation_line_ids')
+    def _compute_sub_cost_flight(self):
+        # self.sub_amount = 0
+        self.sub_total_flight = 0 + sum(line.flighting_cost for line in self.billboard_quotation_line_ids)
+
+    @api.depends('sub_total_flight')
+    def vat_compute_flight(self):
+        for rec in self:
+            rec.vat_flight = rec.sub_total_flight * 0.18
+
+    @api.depends('sub_total_flight', 'vat_flight')
+    def compute_grand_total_flight(self):
+        for rec in self:
+            rec.amount_total_flight = rec.sub_total_flight + rec.vat_flight
+
+    @api.depends('billboard_quotation_line_ids')
+    def _compute_sub_cost_material(self):
+        # self.sub_amount = 0
+        self.sub_total_material = 0 + sum(line.material_cost for line in self.billboard_quotation_line_ids)
+
+    @api.depends('sub_total_material')
+    def vat_compute_material(self):
+        for rec in self:
+            rec.vat_material = rec.sub_total_material * 0.18
+
+    @api.depends('sub_total_material', 'vat_material')
+    def compute_grand_total_material(self):
+        for rec in self:
+            rec.amount_total_material = rec.sub_total_material + rec.vat_material
+
+    @api.depends('billboard_quotation_line_ids')
+    def _compute_sub_cost_rental(self):
+        # self.sub_amount = 0
+        self.sub_total_rental = 0 + sum(line.rental_per_month for line in self.billboard_quotation_line_ids)
+
+    @api.depends('sub_total_rental')
+    def vat_compute_rental(self):
+        for rec in self:
+            rec.vat_rental = rec.sub_total_rental * 0.18
+
+    @api.depends('sub_total_rental', 'vat_rental')
+    def compute_grand_total_rental(self):
+        for rec in self:
+            rec.amount_total_rental = rec.sub_total_rental + rec.vat_rental
+
+    @api.depends('billboard_quotation_line_ids')
+    def _compute_sub_cost_discount(self):
+        # self.sub_amount = 0
+        self.sub_total_discount = 0 + sum(line.discount for line in self.billboard_quotation_line_ids)
+
+    @api.depends('sub_total_discount')
+    def vat_compute_discount(self):
+        for rec in self:
+            rec.vat_discount = rec.sub_total_discount * 0.18
+
+    @api.depends('sub_total_discount', 'vat_discount')
+    def compute_grand_total_discount(self):
+        for rec in self:
+            rec.amount_total_discount = rec.sub_total_discount + rec.vat_discount
 
 
 class BillboardQuotationLines(models.Model):
@@ -170,14 +229,12 @@ class BillboardQuotationLines(models.Model):
     @api.depends("unit", "faces", "flighting_cost", "discount", "material_cost", "no_of_months", "rental_per_month")
     def _cost_subtotal_compute(self):
         for rec in self:
-            rec.cost_subtotal = (rec.faces * rec.no_of_months * rec.rental_per_month) + (
-                    rec.material_cost + rec.flighting_cost)
-            # rec.cost_subtotal = rec.unit * rec.faces * \
-            #                     (rec.material_cost if rec.material_cost != 0 else 1) * \
-            #                     (rec.no_of_months if rec.no_of_months != 0 else 1) * \
-            #                     (rec.rental_per_month if rec.rental_per_month != 0 else 1)
-            # rec.cost_subtotal = rec.unit * (rec.faces if rec.faces != 0 else 1) * rec.no_of_months * (
-            #         rec.material_cost + rec.flighting_cost + rec.rental_per_month)
-            # if rec.unit > 0: rec.cost_subtotal = rec.unit * rec.faces * (rec.material_cost + 1) * (rec.no_of_months
-            # + 1) * (rec.rental_per_month +1) else: rec.cost_subtotal = rec.faces * rec.material_cost *
-            # rec.no_of_months * rec.rental_per_month
+            # Check if discount is not zero
+            if rec.discount and rec.discount != 0:
+                # Apply discount
+                rec.cost_subtotal = (rec.faces * rec.no_of_months * rec.discount) + (
+                        rec.material_cost + rec.flighting_cost)
+            else:
+                # Use the original formula without discount
+                rec.cost_subtotal = (rec.faces * rec.no_of_months * rec.rental_per_month) + (
+                        rec.material_cost + rec.flighting_cost)

@@ -18,6 +18,7 @@ class ConfirmedOrders(models.Model):
     customer_id = fields.Many2one('res.partner', string='Customer', required=True)
     date = fields.Date(string='Date', required=True)
     title = fields.Text(string="Title", required=False, store=True)
+    po = fields.Char(string="PO", required=False, store=True, readonly=True)
     payment_term = fields.Many2one(comodel_name="account.payment.term", string='Payment Terms', required=False)
     sub_total = fields.Float(string='Sub total', compute='_compute_sub_cost', store=True)
     vat = fields.Float(string='VAT 18%', compute="vat_compute", store=True)
@@ -140,6 +141,7 @@ class ConfirmedOrders(models.Model):
             'customer_id': self.customer_id.id,
             'source': self.name,
             'title': self.title,
+            'po': self.po,
             'state': 'draft',
             'date': fields.Date.today(),
             'sub_total': self.sub_total,

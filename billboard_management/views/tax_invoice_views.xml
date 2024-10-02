@@ -39,6 +39,7 @@
                         <group>
                             <field name="name"/>
                             <field name="customer_id"/>
+                            <field name="po"/>
                         </group>
                         <group>
                             <field name="date"/>

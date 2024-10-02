@@ -24,6 +24,7 @@ class TaxInvoice(models.Model):
     vat = fields.Float(string='VAT 18%', compute="vat_compute", store=True)
     amount_total = fields.Float(string='Grand Total', compute="compute_grand_total", store=True)
     amount_due = fields.Float(string='Amount Due', compute="_compute_total_amount_due", store=True)
+    po = fields.Char(string="PO", required=False, store=True, readonly=True)
     total_amount_paid = fields.Float(string='Total Paid', compute="compute_total_amount_paid", store=True)
     company_id = fields.Many2one('res.company', string="Company", default=lambda self: self.env.company)
 
@@ -174,8 +175,8 @@ class TaxInvoice(models.Model):
         move = self.env['account.move'].create(move_vals)
 
         # Optional: Post the invoice automatically after creating it
-        if move:
-            move.action_post()
+        # if move:
+        #     move.action_post()
 
         # Return an action to open the created invoice form view
         return {
