@@ -41,6 +41,7 @@
                         <group>
                             <field name="name"/>
                             <field name="billboard_id"/>
+                            <field name="faces"/>
                         </group>
                         <group>
                             <field name="start_date"/>

@@ -117,6 +117,7 @@ class BillboardQuotation(models.Model):
                 'customer_id': self.customer_id.id,
                 'source': self.name,
                 'po': self.po,
+                'faces': line.faces,
                 'start_date': fields.Date.today(),  # Assuming the start date is today, can be customized
                 'end_date': fields.Date.today() + relativedelta(months=line.no_of_months),
                 # Calculating based on the number of months in the invoice line

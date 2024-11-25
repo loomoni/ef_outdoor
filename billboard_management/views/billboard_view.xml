@@ -139,9 +139,12 @@
                     <group>
                         <group>
                             <field name="name"/>
-                            <field name="media_type"/>
+                            <field name="no_faces"/>
+                            <field name="used_faces"/>
+
                         </group>
                         <group>
+                            <field name="media_type"/>
                             <field name="size"/>
                             <field name="rental_price"/>
                         </group>

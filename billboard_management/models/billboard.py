@@ -1,4 +1,3 @@
-
 from odoo import models, fields, api, _
 
 
@@ -8,7 +7,11 @@ class Billboard(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = "id desc"
 
-    name = fields.Char(string='Face Name', required=True)
+    name = fields.Char(string='Name', required=True)
+    no_faces = fields.Integer(string='No. Faces', required=True)
+    used_faces = fields.Integer(string='Used Faces', required=True, readonly=True, compute="_compute_used_face")
+    available_faces = fields.Integer(string='Available Faces', required=True, readonly=True,
+                                     compute="_compute_available_face")
     image_small = fields.Binary("Image", attachment=True)
     location = fields.Char(string='Location', required=True)
     size = fields.Char(string='Size', required=True)
@@ -32,6 +35,21 @@ class Billboard(models.Model):
         compute="_compute_total_amount_cash"
     )
 
+    # @api.depends('')
+    def _compute_used_face(self):
+        for rec in self:
+            # rec.used_faces = self.env['billboard.contract'].search_count([('billboard_id', '=', rec.id), ('state',
+            # '=', 'active')])
+            rec.used_faces = self.env['billboard.contract'].search_count([('billboard_id', '=', rec.id)])
+            # for record in rec:
+            #     print(record.used_faces)
+            # print(rec.used_faces)
+
+    @api.depends('no_faces', 'used_faces')
+    def _compute_available_face(self):
+        for record in self:
+            record.available_faces = record.no_faces - record.used_faces
+
     @api.depends('billboard_ref')
     def _compute_total_booked(self):
         for record in self:
@@ -48,6 +66,7 @@ class Billboard(models.Model):
                 # ('move_id.state', '=', 'posted')  # Only considering posted invoices
             ]).mapped('amount_total')  # Assuming price_total is the field in invoice lines
             record.total_amount_cash = sum(total_amount)
+
     #
     # def action_view_bookings(self):
     #     return {

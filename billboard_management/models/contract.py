@@ -13,12 +13,14 @@ class BillboardContract(models.Model):
     billboard_id = fields.Many2one(
         'billboard.management',
         string='Billboard',
+        readonly=True,
         required=True,
         domain=[('availability', '=', 'available')]  # Domain to filter only available billboards
     )
-    customer_id = fields.Many2one('res.partner', string='Customer', required=True)
+    customer_id = fields.Many2one('res.partner', string='Customer', required=True, readonly=True)
     start_date = fields.Date(string='Start Date', required=True)
     end_date = fields.Date(string='End Date', required=True)
+    faces = fields.Integer(string='Faces', required=False, readonly=True)
     po = fields.Char(string="PO", required=False, store=True, readonly=True)
     source = fields.Char(string='Source', readonly=True, store=True)
     rental_price = fields.Float(string='Rental Price', related='billboard_id.rental_price')
@@ -40,7 +42,8 @@ class BillboardContract(models.Model):
 
         # Mark the related billboard's availability as 'rented'
         if self.billboard_id:
-            self.billboard_id.availability = 'rented'
+            if self.billboard_id.faces == 0:
+                self.billboard_id.availability = 'rented'
 
     def action_cancel_contract(self):
         self.state = 'cancelled'
