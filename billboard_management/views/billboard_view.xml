@@ -8,6 +8,7 @@
                 <field name="location"/>
                 <field name="region"/>
                 <field name="size"/>
+                <field name="no_faces"/>
                 <field name="rental_price"/>
                 <field name="availability"/>
             </tree>
