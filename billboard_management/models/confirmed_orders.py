@@ -15,7 +15,18 @@ class ConfirmedOrders(models.Model):
 
     name = fields.Char(string='Reference No', required=True, copy=False, readonly=True, index=True,
                        default=lambda self: 'New')
-    customer_id = fields.Many2one('res.partner', string='Customer', required=True)
+    customer_id = fields.Many2one('res.partner', string='Customer', required=True, default=lambda self: self._get_default_customer())
+
+    @api.model
+    def _get_default_customer(self):
+        # Create a customer and automatically link it
+        partner = self.env['res.partner'].create({
+            'name': 'New Customer',  # Set the name for the customer
+            'customer': True,  # Mark as a customer
+            'is_company': True,  # Optional: You can set whether it's an individual or a company
+        })
+        return partner
+
     date = fields.Date(string='Date', required=True)
     title = fields.Text(string="Title", required=False, store=True)
     po = fields.Char(string="PO", required=False, store=True, readonly=True)
@@ -178,15 +189,29 @@ class TaxInvoiceLines(models.Model):
     flighting_cost = fields.Float(string='Flighting Cost', required=False)
     no_of_months = fields.Integer(string='No of Month', required=False)
     rental_per_month = fields.Float(string='Rental Price')
+    discount = fields.Float(string='Discount Price', default=0.0, store=True)
     cost_subtotal = fields.Float(string='Total Cost', compute='_cost_subtotal_compute', store=True)
 
     confirmed_orders_id = fields.Many2one(comodel_name="confirmed.orders", string="Billboard ID",
                                           required=False)
 
-    @api.depends("unit", "faces", "flighting_cost", "material_cost", "no_of_months", "rental_per_month")
+    @api.depends("unit", "discount", "faces", "flighting_cost", "material_cost", "no_of_months", "rental_per_month")
     def _cost_subtotal_compute(self):
         for rec in self:
-            rec.cost_subtotal = (rec.faces * rec.no_of_months * rec.rental_per_month) + (
-                    rec.material_cost + rec.flighting_cost)
+            # Check if discount is not zero
+            if rec.discount and rec.discount != 0:
+                # Apply discount
+                rec.cost_subtotal = (rec.faces * rec.no_of_months * rec.discount) + (
+                        rec.material_cost + rec.flighting_cost)
+            else:
+                # Use the original formula without discount
+                rec.cost_subtotal = (rec.faces * rec.no_of_months * rec.rental_per_month) + (
+                        rec.material_cost + rec.flighting_cost)
+
+        # for rec in self:
+        #     rec.cost_subtotal = (rec.faces * rec.no_of_months * rec.rental_per_month) + (
+        #             rec.material_cost + rec.flighting_cost)
             # rec.cost_subtotal = rec.unit * (rec.faces if rec.faces != 0 else 1) * rec.no_of_months * (
             #         rec.material_cost + rec.flighting_cost + rec.rental_per_month)
+
+

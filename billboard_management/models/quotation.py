@@ -93,7 +93,8 @@ class BillboardQuotation(models.Model):
                 'material_cost': line.material_cost,
                 'flighting_cost': line.flighting_cost,
                 'no_of_months': line.no_of_months,
-                'rental_per_month': line.discount,
+                'rental_per_month': line.rental_per_month,
+                'discount': line.discount,
                 'cost_subtotal': line.cost_subtotal,
             }))
 
