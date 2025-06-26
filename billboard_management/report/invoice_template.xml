@@ -129,11 +129,11 @@
                     </tr>
 
                 </table>
-                <div style="text-align: center; padding: 10px; font-size: 20px; font-weight: bold; font-family: 'Calibri', Sans serif; ">
+                <div style="text-align: center; padding: 10px; font-size: 28px; font-weight: bold; font-family: 'Calibri', Sans serif; ">
                     TAX INVOICE
                 </div>
                 <div t-if="o.title" style="font-family: 'Calibri', Sans serif;">
-                    <div style="font-family: 'Calibri', Sans serif; margin-bottom: 10px;  font-weight: bold">
+                    <div style="font-size: 10px; font-family: 'Calibri', Sans serif; margin-bottom: 10px;  font-weight: bold">
                         REF:
                         <span style="text-decoration: underline;" t-field="o.title"/>
                     </div>
