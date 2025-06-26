@@ -3,7 +3,7 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
                 <table class="table"
-                       style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Calibri', Sans serif; font-size: 14pt;">
+                       style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Calibri', Sans serif; font-size: 10pt;">
                     <tr style="height: 30px">
                         <td style="width: 5%"></td>
                         <td style="width: 30%"></td>
@@ -129,7 +129,7 @@
                     </tr>
 
                 </table>
-                <div style="text-align: center; padding: 10px; font-size: 32px; font-weight: bold; font-family: 'Calibri', Sans serif; ">
+                <div style="text-align: center; padding: 10px; font-size: 18px; font-weight: bold; font-family: 'Calibri', Sans serif; ">
                     TAX INVOICE
                 </div>
                 <div t-if="o.title" style="font-family: 'Calibri', Sans serif;">
@@ -267,7 +267,7 @@
 
                 </table>
                 <table class="table"
-                       style="width: 100%; border-collapse: collapse; font-family: 'Calibri', Sans serif; font-size: 12pt;">
+                       style="width: 100%; border-collapse: collapse; font-family: 'Calibri', Sans serif; font-size: 10pt;">
                     <tr>
                         <td style="padding: 10px; width: 60%"></td>
                         <td style="padding: 10px; width: 10%; font-weight: bold">SUB TOTAL</td>
@@ -293,7 +293,7 @@
 
                 <div t-if="o.payment_term" style="margin-top: 40px; font-family: 'Calibri', Sans serif;">
                     <strong>
-                        <p style="font-size: 14pt">Terms:</p>
+                        <p style="font-size: 10pt">Terms:</p>
                     </strong>
                     <p style="padding-left: 30px">
                         <span t-field="o.payment_term.note"/>

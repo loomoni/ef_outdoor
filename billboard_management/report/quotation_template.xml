@@ -120,7 +120,7 @@
                     PROFORMA INVOICE
                 </div>
                 <div t-if="o.title" style="font-family: 'Calibri', Sans serif;">
-                    <div style="font-size: 12px; font-family: 'Calibri', Sans serif; font-weight: bold">
+                    <div style="font-size: 12px; margin-bottom: 8px;  font-family: 'Calibri', Sans serif; font-weight: bold">
                         REF:
 <!--                        <span style="text-decoration: underline;" t-field="o.title"/>-->
                         <span t-field="o.title"/>
