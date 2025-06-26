@@ -221,7 +221,7 @@ class BillboardQuotationLines(models.Model):
     flighting_cost = fields.Float(string='Flighting Cost', required=False)
     material_cost = fields.Float(string='Material Cost', required=False)
     no_of_months = fields.Integer(string='No of Month', required=False)
-    rental_per_month = fields.Float(string='Rental Price')
+    rental_per_month = fields.Float(string='Rental Price', related='billboard_id.rental_price')
     discount = fields.Float(string='Discount Price', default=0.0, store=True)
     cost_subtotal = fields.Float(string='Total Cost', compute='_cost_subtotal_compute')
 

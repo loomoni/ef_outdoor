@@ -270,40 +270,93 @@
                     <tr>
                         <td style="padding: 10px; width: 30%"></td>
                         <td style="padding: 10px; width: 10%; font-weight: bold">SUB TOTAL</td>
-                        <td style="padding: 10px; border-bottom: 2px solid #000;; solid #000; width: 3%; text-align: right; font-weight: bold">
-                            <span t-esc="'{:,.2f}'.format(float(o.sub_total_flight))"/>
-                        </td>
-                        <td style="padding: 10px; border-bottom: 2px solid #000;  width: 3%; text-align: right; font-weight: bold">
-                            <span t-esc="'{:,.2f}'.format(float(o.sub_total_material))"/>
-                        </td>
-                        <td style="padding: 10px; border-bottom: 2px solid #000;  width: 3%; text-align: right; font-weight: bold">
-                            <span t-esc="'{:,.2f}'.format(float(o.sub_total_rental))"/>
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000; solid #000; width: 3%; text-align: right; font-weight: bold">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.sub_total_flight))"/>-->
+                        <!--                        </td>-->
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000;  width: 3%; text-align: right; font-weight: bold">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.sub_total_material))"/>-->
+                        <!--                        </td>-->
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000;  width: 3%; text-align: right; font-weight: bold">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.sub_total_rental))"/>-->
+                        <!--                        </td>-->
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.sub_total_discount))"/>-->
+                        <!--                        </td>-->
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.sub_total))"/>-->
+                        <!--                        </td>-->
+
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">
+                            <t t-if="float(o.sub_total_flight) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.sub_total_flight))"/>
+                            </t>
                         </td>
                         <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">
-                            <span t-esc="'{:,.2f}'.format(float(o.sub_total_discount))"/>
+                            <t t-if="float(o.sub_total_material) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.sub_total_material))"/>
+                            </t>
                         </td>
                         <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">
-                            <span t-esc="'{:,.2f}'.format(float(o.sub_total))"/>
+                            <t t-if="float(o.sub_total_rental) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.sub_total_rental))"/>
+                            </t>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">
+                            <t t-if="float(o.sub_total_discount) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.sub_total_discount))"/>
+                            </t>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">
+                            <t t-if="float(o.sub_total) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.sub_total))"/>
+                            </t>
                         </td>
 
                     </tr>
                     <tr>
                         <td style="padding: 10px; width: 30%"></td>
                         <td style="padding: 10px; font-weight: bold">VAT 18%</td>
-                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">
-                            <span t-esc="'{:,.2f}'.format(float(o.vat_flight))"/>
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.vat_flight))"/>-->
+                        <!--                        </td>-->
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.vat_material))"/>-->
+                        <!--                        </td>-->
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.vat_rental))"/>-->
+                        <!--                        </td>-->
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.vat_discount))"/>-->
+                        <!--                        </td>-->
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.vat))"/>-->
+                        <!--                        </td>-->
+
+
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">
+                            <t t-if="float(o.vat_flight) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.vat_flight))"/>
+                            </t>
                         </td>
-                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">
-                            <span t-esc="'{:,.2f}'.format(float(o.vat_material))"/>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">
+                            <t t-if="float(o.vat_material) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.vat_material))"/>
+                            </t>
                         </td>
-                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">
-                            <span t-esc="'{:,.2f}'.format(float(o.vat_rental))"/>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">
+                            <t t-if="float(o.vat_rental) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.vat_rental))"/>
+                            </t>
                         </td>
-                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">
-                            <span t-esc="'{:,.2f}'.format(float(o.vat_discount))"/>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">
+                            <t t-if="float(o.vat_discount) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.vat_discount))"/>
+                            </t>
                         </td>
-                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; ; text-align: right; font-weight: bold">
-                            <span t-esc="'{:,.2f}'.format(float(o.vat))"/>
+                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold">
+                            <t t-if="float(o.vat) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.vat))"/>
+                            </t>
                         </td>
 
                     </tr>
@@ -312,21 +365,48 @@
                         <td style="padding: 10px; width: 20%; font-weight: bold; font-family: 'Calibri', Sans serif;">
                             GRAND TOTAL
                         </td>
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.amount_total_flight))"/>-->
+                        <!--                        </td>-->
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.amount_total_material))"/>-->
+                        <!--                        </td>-->
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.amount_total_rental))"/>-->
+                        <!--                        </td>-->
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.amount_total_discount))"/>-->
+                        <!--                        </td>-->
+                        <!--                        <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">-->
+                        <!--                            <span t-esc="'{:,.2f}'.format(float(o.amount_total))"/>-->
+                        <!--                        </td>-->
+
                         <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">
-                            <span t-esc="'{:,.2f}'.format(float(o.amount_total_flight))"/>
+                            <t t-if="float(o.amount_total_flight) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.amount_total_flight))"/>
+                            </t>
                         </td>
                         <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">
-                            <span t-esc="'{:,.2f}'.format(float(o.amount_total_material))"/>
+                            <t t-if="float(o.amount_total_material) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.amount_total_material))"/>
+                            </t>
                         </td>
                         <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">
-                            <span t-esc="'{:,.2f}'.format(float(o.amount_total_rental))"/>
+                            <t t-if="float(o.amount_total_rental) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.amount_total_rental))"/>
+                            </t>
                         </td>
                         <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">
-                            <span t-esc="'{:,.2f}'.format(float(o.amount_total_discount))"/>
+                            <t t-if="float(o.amount_total_discount) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.amount_total_discount))"/>
+                            </t>
                         </td>
                         <td style="padding: 10px; border-bottom: 2px solid #000; width: 3%; text-align: right; font-weight: bold; font-family: 'Calibri', Sans serif;">
-                            <span t-esc="'{:,.2f}'.format(float(o.amount_total))"/>
+                            <t t-if="float(o.amount_total) != 0.0">
+                                <span t-esc="'{:,.2f}'.format(float(o.amount_total))"/>
+                            </t>
                         </td>
+
 
                     </tr>
                 </table>

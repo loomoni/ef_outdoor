@@ -154,8 +154,9 @@ class TaxInvoice(models.Model):
                         ('billboard_ref', '=', line.billboard_id.billboard_ref)
                     ], limit=1).id,
                     'name': line.billboard_id.name or 'Billboard service',
-                    'quantity': line.no_of_months,
-                    'price_unit': (line.rental_per_month * line.faces) + (line.material_cost + line.flighting_cost),
+                    'quantity': 1,
+                    # 'quantity': line.no_of_months,
+                    'price_unit': (line.rental_per_month * line.faces * line.no_of_months) + (line.material_cost + line.flighting_cost),
                     # 'quantity': float(line.no_of_months or 1),  # Quantity as float
                     # 'price_unit': float(line.rental_per_month or 0.0),  # Ensure price_unit is float
                     'tax_ids': [(6, 0, [
@@ -496,7 +497,7 @@ class AccountMoveLineInherit(models.Model):
     #     no_faces = fields.Integer(string='Faces', default=1, store=True)
     #     cost_material = fields.Float(string='Material Cost', default=0.0, store=True)
     #     cost_flighting = fields.Float(string='Flighting Cost', default=0.0, store=True)
-    quantity = fields.Integer(string='No of Month', default=1, store=True)
+    no_months = fields.Integer(string='No of Month', default=1, store=True)
 #     price_unit = fields.Float(string='Rental Price', default=1, store=True)
 #     price_subtotal = fields.Float(
 #         string='Subtotal',
