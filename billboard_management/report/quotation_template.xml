@@ -3,7 +3,7 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
                 <table class="table"
-                       style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Calibri', Sans serif; font-size: 14pt;">
+                       style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Calibri', Sans serif; font-size: 10pt;">
                     <tr style="height: 30px">
                         <td style="width: 5%"></td>
                         <td style="width: 30%"></td>
@@ -116,13 +116,14 @@
                     </tr>
 
                 </table>
-                <div style="text-align: center; padding: 10px; font-size: 20px; font-weight: bold; font-family: 'Calibri', Sans serif; ">
+                <div style="text-align: center; padding: 10px; font-size: 18px; font-weight: bold; font-family: 'Calibri', Sans serif; ">
                     PROFORMA INVOICE
                 </div>
                 <div t-if="o.title" style="font-family: 'Calibri', Sans serif;">
-                    <div style="font-size: 15px; font-family: 'Calibri', Sans serif; font-weight: bold">
+                    <div style="font-size: 12px; font-family: 'Calibri', Sans serif; font-weight: bold">
                         REF:
-                        <span style="text-decoration: underline;" t-field="o.title"/>
+<!--                        <span style="text-decoration: underline;" t-field="o.title"/>-->
+                        <span t-field="o.title"/>
                     </div>
                 </div>
                 <table class="table"
