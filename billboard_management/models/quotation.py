@@ -103,7 +103,7 @@ class BillboardQuotation(models.Model):
             'title': self.title,
             'po': self.po,
             'state': 'confirmed',
-            'date': fields.Date.today(),
+            'date': self.date,
             # 'payment_term': self.payment_term.id if self.payment_term_id else False,
             'confirmed_orders_line_ids': confirmed_order_lines,
         }
