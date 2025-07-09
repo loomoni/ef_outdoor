@@ -24,3 +24,12 @@ class AccountMoveInherit(models.Model):
             'website': company.website,
             'logo': BytesIO(logo_data)
         }
+
+
+class HrExpenseInherit(models.Model):
+    _name = 'hr.expense'
+
+    payment_mode = fields.Selection([
+        ('company_account', 'Company Account'),
+        ('own_account', 'Employee'),
+    ], string="Payment Mode", default='company_account')

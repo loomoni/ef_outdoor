@@ -2,7 +2,7 @@
     'name': 'Custom Sale',
     'version': '1.0',
     'category': 'sahe',
-    'depends': ['base', 'sale', 'stock'],
+    'depends': ['base', 'sale', 'stock', 'hr_expense'],
     'data': [
         'views/report_stock_picking.xml',
         'reports/reports.xml',
