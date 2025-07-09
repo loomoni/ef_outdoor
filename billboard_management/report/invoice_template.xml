@@ -3,7 +3,7 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
                 <table class="table"
-                       style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Calibri', Sans serif; font-size: 9pt;">
+                       style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Calibri', Sans serif; font-size: 15pt;">
                     <tr style="height: 30px">
                         <td style="width: 5%"></td>
                         <td style="width: 30%"></td>
@@ -95,7 +95,7 @@
                             </strong>
                         </td>
                     </tr>
-                         <tr style="height: 20px">
+                    <tr style="height: 20px">
                         <td style="width: 5%"></td>
                         <td style="width: 30%"></td>
                         <td></td>
@@ -129,15 +129,25 @@
                     </tr>
 
                 </table>
-                <div style="text-align: center; padding: 10px; font-size: 28px; font-weight: bold; font-family: 'Calibri', Sans serif; ">
+                <div style="text-align: center; padding: 10px; font-size: 30px; font-weight: bold; font-family: 'Calibri', Sans serif; ">
                     TAX INVOICE
                 </div>
-                <div t-if="o.title" style="font-family: 'Calibri', Sans serif;">
-                    <div style="font-size: 20px; font-family: 'Calibri', Sans serif; margin-bottom: 10px;  font-weight: bold">
+                <br/>
+                <br/>
+                <!--                <div t-if="o.title" style="font-family: 'Calibri', Sans serif;">-->
+                <!--                    <div style="font-size: 18px; font-family: 'Calibri', Sans serif; margin-bottom: 10px;  font-weight: bold">-->
+                <!--                        REF:-->
+                <!--                        <span style="text-decoration: underline;" t-field="o.title"/>-->
+                <!--                    </div>-->
+                <!--                </div>-->
+                <div t-if="o.title" style="font-family: 'Calibri', Sans-serif; text-align: center;">
+                    <div style="font-size: 18px; font-family: 'Calibri', Sans-serif; margin-bottom: 10px; font-weight: bold;">
                         REF:
                         <span style="text-decoration: underline;" t-field="o.title"/>
                     </div>
                 </div>
+
+                <br/>
                 <table class="table"
                        style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Calibri', Sans serif; font-size: 9pt;">
                     <thead>
@@ -293,7 +303,7 @@
 
                 <div t-if="o.payment_term" style="margin-top: 40px; font-family: 'Calibri', Sans serif;">
                     <strong>
-                        <p style="font-size: 10pt">Terms:</p>
+                        <p style="font-size: 18pt">Terms:</p>
                     </strong>
                     <p style="padding-left: 30px; margin-left: 30px">
                         <span t-field="o.payment_term.note"/>
