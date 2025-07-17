@@ -8,7 +8,7 @@
                 <t t-set="data_report_header_spacing" t-value="9"/>
                 <t t-set="data_report_dpi" t-value="110"/>
                 <div class="page">
-                    <h2>Partner Ledger</h2>
+                    <h2>Account Statement</h2>
                     <div class="row">
                         <div class="col-3">
                             <strong>Company:</strong>
