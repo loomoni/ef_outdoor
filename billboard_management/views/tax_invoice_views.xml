@@ -62,6 +62,8 @@
                                     <field name="material_cost" optional="hide"/>
                                     <field name="rental_per_month" optional="hide"/>
                                     <field name="no_of_months" optional="hide"/>
+                                    <field name="tax"/>
+                                    <field name="total_tax"/>
                                     <field name="cost_subtotal" readonly="1"/>
                                 </tree>
                             </field>

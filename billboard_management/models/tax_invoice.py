@@ -25,6 +25,7 @@ class TaxInvoice(models.Model):
     amount_total = fields.Float(string='Grand Total', compute="compute_grand_total", store=True)
     amount_due = fields.Float(string='Amount Due', compute="_compute_total_amount_due", store=True)
     po = fields.Char(string="PO", required=False, store=True, readonly=True)
+
     total_amount_paid = fields.Float(string='Total Paid', compute="compute_total_amount_paid", store=True)
     company_id = fields.Many2one('res.company', string="Company", default=lambda self: self.env.company)
 
@@ -380,10 +381,11 @@ class TaxInvoice(models.Model):
         # self.sub_amount = 0
         self.sub_total = 0 + sum(line.cost_subtotal for line in self.tax_invoice_line_ids)
 
-    @api.depends('sub_total')
+    @api.depends('tax_invoice_line_ids.total_tax')
     def vat_compute(self):
         for rec in self:
-            rec.vat = rec.sub_total * 0.18
+            # rec.vat = rec.sub_total * sum(line.tax for line in self.tax_invoice_line_ids)
+            rec.vat = sum(line.total_tax for line in self.tax_invoice_line_ids)
 
     @api.depends('sub_total', 'vat')
     def compute_grand_total(self):
@@ -407,6 +409,8 @@ class TaxInvoiceLines(models.Model):
     material_cost = fields.Float(string='Material Cost', required=False)
     flighting_cost = fields.Float(string='Flighting Cost', required=False)
     no_of_months = fields.Integer(string='No of Month', required=False)
+    tax = fields.Float(string="Tax", required=False, store=True, default=18)
+    total_tax = fields.Float(string="Total Tax", required=False, store=True, compute="compute_tax")
     rental_per_month = fields.Float(string='Rental Price')
     cost_subtotal = fields.Float(string='Total Cost', compute='_cost_subtotal_compute', store=True)
 
@@ -426,6 +430,11 @@ class TaxInvoiceLines(models.Model):
 
             # rec.cost_subtotal = rec.unit * (rec.faces if rec.faces != 0 else 1) * rec.no_of_months * (
             #         rec.material_cost + rec.flighting_cost + rec.rental_per_month)
+
+    @api.depends("cost_subtotal")
+    def compute_tax(self):
+        for rec in self:
+            rec.total_tax = rec.cost_subtotal * (rec.tax / 100)
 
 
 class AccountMoveInherit(models.Model):
