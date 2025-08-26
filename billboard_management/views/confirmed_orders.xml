@@ -51,6 +51,7 @@
                                 <tree editable="bottom">
                                     <field name="billboard_id"/>
                                     <field name="unit"/>
+                                    <field name="tax"/>
                                     <field name="faces" optional="hide"/>
                                     <field name="flighting_cost" optional="hide"/>
                                     <field name="material_cost" optional="hide"/>
