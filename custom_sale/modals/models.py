@@ -29,7 +29,12 @@ class AccountMoveInherit(models.Model):
 class HrExpenseInherit(models.Model):
     _inherit = 'hr.expense'
 
+    # payment_mode = fields.Selection([
+    #     ('company_account', 'Company Account'),
+    #     ('own_account', 'Employee'),
+    # ], string="Payment Mode", default='company_account')
+    #
     payment_mode = fields.Selection([
-        ('company_account', 'Company Account'),
-        ('own_account', 'Employee'),
-    ], string="Payment Mode", default='company_account')
+        ("own_account", "Employee (to reimburse)"),
+        ("company_account", "Company")
+    ], default='company_account', tracking=True, states={'done': [('readonly', True)], 'approved': [('readonly', True)], 'reported': [('readonly', True)]}, string="Paid By")
