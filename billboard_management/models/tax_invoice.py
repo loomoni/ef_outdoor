@@ -381,6 +381,7 @@ class TaxInvoice(models.Model):
         # self.sub_amount = 0
         self.sub_total = 0 + sum(line.cost_subtotal for line in self.tax_invoice_line_ids)
 
+    @api.onchange('tax_invoice_line_ids.total_tax')
     @api.depends('tax_invoice_line_ids.total_tax')
     def vat_compute(self):
         for rec in self:

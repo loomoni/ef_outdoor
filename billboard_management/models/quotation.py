@@ -1,9 +1,11 @@
 import base64
+from email.policy import default
 from io import BytesIO
 
 from dateutil.relativedelta import relativedelta
 
 from odoo import models, fields, api
+from odoo.tools.populate import compute
 
 
 class BillboardQuotation(models.Model):
@@ -93,6 +95,7 @@ class BillboardQuotation(models.Model):
                 'material_cost': line.material_cost,
                 'flighting_cost': line.flighting_cost,
                 'no_of_months': line.no_of_months,
+                'tax': line.tax,
                 'rental_per_month': line.rental_per_month,
                 'discount': line.discount,
                 'cost_subtotal': line.cost_subtotal,
@@ -134,10 +137,19 @@ class BillboardQuotation(models.Model):
         # self.sub_amount = 0
         self.sub_total = 0 + sum(line.cost_subtotal for line in self.billboard_quotation_line_ids)
 
-    @api.depends('sub_total')
+    # @api.depends('sub_total')
+    # def vat_compute(self):
+    #     for rec in self:
+    #         rec.vat = rec.sub_total * 0.18
+
+
+    @api.onchange('billboard_quotation_line_ids.total_tax')
+    @api.depends('billboard_quotation_line_ids.total_tax')
     def vat_compute(self):
         for rec in self:
-            rec.vat = rec.sub_total * 0.18
+            # rec.vat = rec.sub_total * sum(line.tax for line in self.tax_invoice_line_ids)
+            rec.vat = sum(line.total_tax for line in self.billboard_quotation_line_ids)
+
 
     @api.depends('sub_total', 'vat')
     def compute_grand_total(self):
@@ -223,6 +235,8 @@ class BillboardQuotationLines(models.Model):
     no_of_months = fields.Integer(string='No of Month', required=False)
     rental_per_month = fields.Float(string='Rental Price')
     discount = fields.Float(string='Discount Price', default=0.0, store=True)
+    tax = fields.Float(string="VAT", default=18.00)
+    total_tax = fields.Float(string="Total VAT", required=False, store=True, compute='compute_tax')
     cost_subtotal = fields.Float(string='Total Cost', compute='_cost_subtotal_compute')
 
     billboard_quotation_id = fields.Many2one(comodel_name="billboard.quotation", string="Billboard ID",
@@ -240,3 +254,9 @@ class BillboardQuotationLines(models.Model):
                 # Use the original formula without discount
                 rec.cost_subtotal = (rec.faces * rec.no_of_months * rec.rental_per_month) + (
                         rec.material_cost + rec.flighting_cost)
+
+    @api.depends("cost_subtotal")
+    def compute_tax(self):
+        for rec in self:
+            rec.total_tax = rec.cost_subtotal * (rec.tax / 100)
+

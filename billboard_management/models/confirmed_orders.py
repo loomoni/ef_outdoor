@@ -33,6 +33,7 @@ class ConfirmedOrders(models.Model):
     payment_term = fields.Many2one(comodel_name="account.payment.term", string='Payment Terms', required=False)
     sub_total = fields.Float(string='Sub total', compute='_compute_sub_cost', store=True)
     vat = fields.Float(string='VAT 18%', compute="vat_compute", store=True)
+    tax = fields.Float(string="VAT", default=18.00)
     amount_total = fields.Float(string='Grand Total', compute="compute_grand_total", store=True)
     amount_due = fields.Float(string='Amount Due', compute="_compute_total_amount_due", store=True)
     total_amount_paid = fields.Float(string='Total Paid', compute="compute_total_amount_paid", store=True)
@@ -49,6 +50,7 @@ class ConfirmedOrders(models.Model):
         string='Account Moves',
         domain="[('invoice_origin', '=', name)]"  # Ensure domain compares strings
     )
+
 
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -87,10 +89,19 @@ class ConfirmedOrders(models.Model):
         # self.sub_amount = 0
         self.sub_total = 0 + sum(line.cost_subtotal for line in self.confirmed_orders_line_ids)
 
-    @api.depends('sub_total')
+    # @api.depends('sub_total')
+    # def vat_compute(self):
+    #     for rec in self:
+    #         rec.vat = rec.sub_total * 0.18
+
+
+    @api.onchange('confirmed_orders_line_ids.total_tax')
+    @api.depends('confirmed_orders_line_ids.total_tax')
     def vat_compute(self):
         for rec in self:
-            rec.vat = rec.sub_total * 0.18
+            # rec.vat = rec.sub_total * sum(line.tax for line in self.tax_invoice_line_ids)
+            rec.vat = sum(line.total_tax for line in self.confirmed_orders_line_ids)
+
 
     @api.depends('sub_total', 'vat')
     def compute_grand_total(self):
@@ -190,6 +201,8 @@ class TaxInvoiceLines(models.Model):
     no_of_months = fields.Integer(string='No of Month', required=False)
     rental_per_month = fields.Float(string='Rental Price')
     discount = fields.Float(string='Discount Price', default=0.0, store=True)
+    tax = fields.Float(string="VAT", default=18.00)
+    total_tax = fields.Float(string="Total VAT", required=False, store=True, compute='compute_tax')
     cost_subtotal = fields.Float(string='Total Cost', compute='_cost_subtotal_compute', store=True)
 
     confirmed_orders_id = fields.Many2one(comodel_name="confirmed.orders", string="Billboard ID",
@@ -213,5 +226,11 @@ class TaxInvoiceLines(models.Model):
         #             rec.material_cost + rec.flighting_cost)
             # rec.cost_subtotal = rec.unit * (rec.faces if rec.faces != 0 else 1) * rec.no_of_months * (
             #         rec.material_cost + rec.flighting_cost + rec.rental_per_month)
+
+    @api.depends("cost_subtotal")
+    def compute_tax(self):
+        for rec in self:
+            rec.total_tax = rec.cost_subtotal * (rec.tax / 100)
+
 
 
