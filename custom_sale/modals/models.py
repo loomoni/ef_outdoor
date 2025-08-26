@@ -27,7 +27,7 @@ class AccountMoveInherit(models.Model):
 
 
 class HrExpenseInherit(models.Model):
-    _name = 'hr.expense'
+    _inherit = 'hr.expense'
 
     payment_mode = fields.Selection([
         ('company_account', 'Company Account'),
