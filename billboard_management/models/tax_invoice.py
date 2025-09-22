@@ -26,7 +26,7 @@ class TaxInvoice(models.Model):
     amount_due = fields.Float(string='Amount Due', compute="_compute_total_amount_due", store=True)
     po = fields.Char(string="PO", required=False, store=True, readonly=True)
 
-    total_amount_paid = fields.Float(string='Total Paid', compute="compute_total_amount_paid", store=True)
+    total_amount_paid = fields.Float(string='Total Paid', compute="compute_amount_paid", store=True)
     company_id = fields.Many2one('res.company', string="Company", default=lambda self: self.env.company)
 
     tax_invoice_line_ids = fields.One2many(comodel_name="tax.invoice.line",
@@ -93,16 +93,30 @@ class TaxInvoice(models.Model):
     #         record.total_amount_paid = total_paid
 
     # @api.depends('name', 'move_ids.amount_total', 'move_ids.amount_residual')
-    def compute_total_amount_paid(self):
+    # def compute_total_amount_paid(self):
+    #     for record in self:
+    #         # Search for all account.move records where invoice_origin matches the name in tax.invoice
+    #         account_moves = self.env['account.move'].search([('invoice_origin', '=', record.source)])
+    #
+    #         # Sum the relevant amount (either amount_total, amount_residual, or another field)
+    #         total_paid = sum(
+    #             move.amount_total for move in account_moves)  # Amount paid = Total - Residual
+    #
+    #         # Update the total_amount_paid in tax.invoice
+    #         record.total_amount_paid = total_paid
+
+    def compute_amount_paid(self):
         for record in self:
-            # Search for all account.move records where invoice_origin matches the name in tax.invoice
-            account_moves = self.env['account.move'].search([('invoice_origin', '=', record.source)])
+            # Find account.move records linked to this tax.invoice
+            account_moves = self.env['account.move'].search([
+                ('tax_invoice_ref', '=', record.name),
+                ('move_type', 'in', ['out_invoice', 'in_invoice'])  # limit to invoices
+            ])
 
-            # Sum the relevant amount (either amount_total, amount_residual, or another field)
-            total_paid = sum(
-                move.amount_total for move in account_moves)  # Amount paid = Total - Residual
+            # Compute the amount paid = total - residual
+            total_paid = sum(move.amount_total - move.amount_residual for move in account_moves)
 
-            # Update the total_amount_paid in tax.invoice
+            # Update the field
             record.total_amount_paid = total_paid
 
     @api.depends('amount_total', 'total_amount_paid')
@@ -190,17 +204,17 @@ class TaxInvoice(models.Model):
             'type': 'ir.actions.act_window',
             'target': 'current',
         }
-
-    def compute_amount_paid(self):
-        for record in self:
-            # Search for all account.move records where invoice_origin matches the name in tax.invoice
-            account_moves = self.env['account.move'].search([('tax_invoice_ref', '=', record.name)])
-
-            # Sum the relevant amount (either amount_total, amount_residual, or another field)
-            total_paid = sum(move.amount_total for move in account_moves)
-
-            # Update the total_amount_paid in tax.invoice
-            record.total_amount_paid = total_paid
+    #
+    # def compute_amount_paid(self):
+    #     for record in self:
+    #         # Search for all account.move records where invoice_origin matches the name in tax.invoice
+    #         account_moves = self.env['account.move'].search([('tax_invoice_ref', '=', record.name)])
+    #
+    #         # Sum the relevant amount (either amount_total, amount_residual, or another field)
+    #         total_paid = sum(move.amount_total for move in account_moves)
+    #
+    #         # Update the total_amount_paid in tax.invoice
+    #         record.total_amount_paid = total_paid
 
     # def action_confirm_invoice(self):
     #     self.state = 'confirmed'
