@@ -127,8 +127,8 @@ class TaxInvoice(models.Model):
                 record.state = 'paid'
             elif 0 < record.amount_due < record.amount_total:
                 record.state = 'partial'
-            elif record.amount_total == record.amount_due:
-                record.state = 'confirmed'
+            # elif record.amount_total == record.amount_due:
+            #     record.state = 'confirmed'
 
     @api.model
     def create(self, vals):
