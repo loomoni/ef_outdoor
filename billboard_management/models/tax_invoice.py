@@ -106,6 +106,7 @@ class TaxInvoice(models.Model):
     #         record.total_amount_paid = total_paid
 
     def compute_amount_paid(self):
+        self.state = 'draft'
         for record in self:
             # Find account.move records linked to this tax.invoice
             account_moves = self.env['account.move'].search([
@@ -141,8 +142,8 @@ class TaxInvoice(models.Model):
         # Logic to send the quotation to the customer (email template, etc.)
 
     def action_confirm_invoice(self):
-        self.state = 'draft'
-        # self.state = 'confirmed'
+        # self.state = 'draft'
+        self.state = 'confirmed'
 
         # for move in self:
 
