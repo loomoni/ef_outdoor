@@ -141,7 +141,8 @@ class TaxInvoice(models.Model):
         # Logic to send the quotation to the customer (email template, etc.)
 
     def action_confirm_invoice(self):
-        self.state = 'confirmed'
+        self.state = 'draft'
+        # self.state = 'confirmed'
 
         # for move in self:
 
