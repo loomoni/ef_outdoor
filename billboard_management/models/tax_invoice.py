@@ -1,10 +1,9 @@
 import base64
-from importlib.resources._common import _
 from io import BytesIO
 
 from dateutil.relativedelta import relativedelta
 
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, _logger, UserError
 
 
