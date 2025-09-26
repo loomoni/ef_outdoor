@@ -1,10 +1,12 @@
 import base64
 from email.policy import default
+
 from io import BytesIO
 
 from dateutil.relativedelta import relativedelta
 
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 from odoo.tools.populate import compute
 
 
@@ -77,6 +79,14 @@ class BillboardQuotation(models.Model):
         if vals.get('name', 'New') == 'New':
             vals['name'] = self.env['ir.sequence'].next_by_code('billboard.quotation') or 'New'
         return super(BillboardQuotation, self).create(vals)
+
+    def unlink(self):
+        for record in self:
+            if record.state != 'draft':
+                raise UserError(
+                    _("You can only delete Quotation that are in Draft state.")
+                )
+        return super(BillboardQuotation, self).unlink()
 
     def action_send_quotation(self):
         self.state = 'sent'

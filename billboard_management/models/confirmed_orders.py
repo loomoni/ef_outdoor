@@ -3,7 +3,7 @@ from io import BytesIO
 
 from dateutil.relativedelta import relativedelta
 
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, _logger, UserError
 
 
@@ -60,6 +60,15 @@ class ConfirmedOrders(models.Model):
         ('paid', 'Full Paid'),
         ('cancelled', 'Cancelled'),
     ], string='Status', default='draft')
+
+    def unlink(self):
+        for record in self:
+            if record.state != 'draft':
+                raise UserError(
+                    _("You can only delete Orders that are in Draft state.")
+                )
+        return super(ConfirmedOrders, self).unlink()
+
 
     @api.model
     def create(self, vals):

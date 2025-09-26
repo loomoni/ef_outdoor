@@ -1,4 +1,5 @@
 import base64
+from importlib.resources._common import _
 from io import BytesIO
 
 from dateutil.relativedelta import relativedelta
@@ -140,6 +141,22 @@ class TaxInvoice(models.Model):
     def action_send_quotation(self):
         self.state = 'sent'
         # Logic to send the quotation to the customer (email template, etc.)
+
+    def unlink(self):
+        for record in self:
+            if record.state != 'draft':
+                raise UserError(
+                    _("You can only delete Tax Invoices that are in Draft state.")
+                )
+        return super(TaxInvoice, self).unlink()
+
+    def unlink(self):
+        for record in self:
+            if record.state != 'draft':
+                raise UserError(
+                    _("You can only delete Tax Invoices that are in Draft state.")
+                )
+        return super(TaxInvoice, self).unlink()
 
     def action_confirm_invoice(self):
         # self.state = 'draft'
