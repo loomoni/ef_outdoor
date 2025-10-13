@@ -29,7 +29,7 @@ class ConfirmedOrders(models.Model):
 
     date = fields.Date(string='Date', required=True)
     title = fields.Text(string="Title", required=False, store=True)
-    po = fields.Char(string="PO", required=False, store=True, readonly=False)
+    po = fields.Char(string="PO", required=False, store=True, readonly=True)
     payment_term = fields.Many2one(comodel_name="account.payment.term", string='Payment Terms', required=False)
     sub_total = fields.Float(string='Sub total', compute='_compute_sub_cost', store=True)
     vat = fields.Float(string='VAT 18%', compute="vat_compute", store=True)
