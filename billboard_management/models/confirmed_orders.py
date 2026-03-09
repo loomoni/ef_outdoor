@@ -70,6 +70,11 @@ class ConfirmedOrders(models.Model):
         return super(ConfirmedOrders, self).unlink()
 
 
+    def action_cancel_order(self):
+        self.state = 'cancelled'
+
+
+
     @api.model
     def create(self, vals):
         if vals.get('name', 'New') == 'New':

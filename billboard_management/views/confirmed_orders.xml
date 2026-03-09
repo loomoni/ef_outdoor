@@ -30,6 +30,10 @@
                     <!--                            type="object" attrs="{'invisible': [('amount_due', '=', 0)]}"/>-->
                     <button name="action_create_invoice" string="Create Invoice" class="oe_highlight" states="confirmed"
                             type="object" attrs="{'invisible': [('amount_due', '=', 0)]}"/>
+
+                    <button name="action_cancel_order" string="Cancel" states="confirmed,paid"
+                            type="object"/>
+
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,partial,paid,confirmed,cancelled"/>
                 </header>
