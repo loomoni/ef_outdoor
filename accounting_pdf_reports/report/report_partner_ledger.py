@@ -28,6 +28,18 @@ class ReportPartnerLedger(models.AbstractModel):
                 ORDER BY "account_move_line".date"""
         self.env.cr.execute(query, tuple(params))
         res = self.env.cr.dictfetchall()
+        # Map standard move names (e.g. INV/2025/00043) to the custom Tax
+        # Invoice number (e.g. EF/2026/277) so the statement shows the
+        # reference the customer actually received. Longest names first so a
+        # shorter name can't partially overwrite a longer one.
+        tax_moves = self.env['account.move'].search([
+            ('partner_id', '=', partner.id),
+            ('tax_invoice_ref', '!=', False),
+        ])
+        tax_ref_map = sorted(
+            ((m.name, m.tax_invoice_ref) for m in tax_moves if m.name),
+            key=lambda pair: len(pair[0]), reverse=True,
+        )
         sum = 0.0
         lang_code = self.env.context.get('lang') or 'en_US'
         lang = self.env['res.lang']
@@ -39,6 +51,11 @@ class ReportPartnerLedger(models.AbstractModel):
                 r[field_name] for field_name in ('move_name', 'ref', 'name')
                 if r[field_name] not in (None, '', '/')
             )
+            # Show the customer-facing Tax Invoice number wherever the
+            # standard move name appears (invoice lines and their payments).
+            for move_name, tax_ref in tax_ref_map:
+                if move_name in r['displayed_name']:
+                    r['displayed_name'] = r['displayed_name'].replace(move_name, tax_ref)
             sum += r['debit'] - r['credit']
             r['progress'] = sum
             r['currency_id'] = currency.browse(r.get('currency_id'))
