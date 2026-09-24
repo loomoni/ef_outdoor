@@ -26,7 +26,7 @@ class TaxInvoice(models.Model):
     amount_due = fields.Float(string='Amount Due', compute="_compute_total_amount_due", store=True)
     po = fields.Char(string="PO", required=False, store=True, readonly=True)
 
-    total_amount_paid = fields.Float(string='Total Paid', compute="compute_amount_paid", store=True)
+    total_amount_paid = fields.Float(string='Total Paid', compute="_compute_total_amount_paid", store=True)
     company_id = fields.Many2one('res.company', string="Company", default=lambda self: self.env.company)
 
     tax_invoice_line_ids = fields.One2many(comodel_name="tax.invoice.line",
@@ -40,6 +40,10 @@ class TaxInvoice(models.Model):
         string='Account Moves',
         domain="[('invoice_origin', '=', name)]"  # Ensure domain compares strings
     )
+    # Proper relational link so paid amounts recompute automatically when a
+    # payment changes a linked invoice's residual (no manual button needed).
+    invoice_move_ids = fields.One2many(
+        'account.move', 'tax_invoice_id', string='Linked Invoices')
 
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -105,20 +109,32 @@ class TaxInvoice(models.Model):
     #         # Update the total_amount_paid in tax.invoice
     #         record.total_amount_paid = total_paid
 
-    def compute_amount_paid(self):
-        self.state = 'draft'
+    @api.depends('invoice_move_ids.amount_total', 'invoice_move_ids.amount_residual',
+                 'invoice_move_ids.payment_state', 'invoice_move_ids.state',
+                 'invoice_move_ids.move_type')
+    def _compute_total_amount_paid(self):
+        # Runs automatically whenever a linked invoice's residual changes,
+        # e.g. right after a payment is registered on the account.move.
         for record in self:
-            # Find account.move records linked to this tax.invoice
-            account_moves = self.env['account.move'].search([
+            posted = record.invoice_move_ids.filtered(
+                lambda m: m.state == 'posted'
+                and m.move_type in ('out_invoice', 'in_invoice')
+            )
+            record.total_amount_paid = sum(
+                m.amount_total - m.amount_residual for m in posted
+            )
+
+    def compute_amount_paid(self):
+        # Manual fallback/repair: link any legacy moves found via the old
+        # tax_invoice_ref Char, then recompute. Kept so the existing button works.
+        for record in self:
+            legacy = self.env['account.move'].search([
                 ('tax_invoice_ref', '=', record.name),
-                ('move_type', 'in', ['out_invoice', 'in_invoice'])  # limit to invoices
+                ('tax_invoice_id', '=', False),
             ])
-
-            # Compute the amount paid = total - residual
-            total_paid = sum(move.amount_total - move.amount_residual for move in account_moves)
-
-            # Update the field
-            record.total_amount_paid = total_paid
+            if legacy:
+                legacy.write({'tax_invoice_id': record.id})
+        self._compute_total_amount_paid()
 
     @api.depends('amount_total', 'total_amount_paid')
     def _compute_total_amount_due(self):
@@ -177,6 +193,7 @@ class TaxInvoice(models.Model):
             'move_type': 'out_invoice',  # Assuming it's a customer invoice (sale type)
             'partner_id': self.customer_id.id,
             'tax_invoice_ref': self.name,
+            'tax_invoice_id': self.id,
             'invoice_date': fields.Date.context_today(self),
             'invoice_date_due': self.date,  # Due date as per your `date` field or a payment term
             'journal_id': self.env['account.journal'].search([('type', '=', 'sale')], limit=1).id,
@@ -474,6 +491,9 @@ class AccountMoveInherit(models.Model):
     _inherit = 'account.move'
 
     tax_invoice_ref = fields.Char(string='Tax Invoice Ref', store=True, readonly=True, )
+    tax_invoice_id = fields.Many2one(
+        'tax.invoice', string='Tax Invoice', index=True, copy=False,
+        ondelete='set null')
 
 
 #     amount_tax = fields.Monetary(string='Taxes', store=True, readonly=True, compute='_compute_amount')
