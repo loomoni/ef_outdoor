@@ -1,6 +1,7 @@
 {
     'name': 'Expense Check Number',
-    'version': '15.0.1.1.0',
+    'version': '15.0.1.2.0',
+    'license': 'LGPL-3',
     'summary': 'Add check number to expense sheet',
     'category': 'Human Resources',
     'author': 'Your Name',

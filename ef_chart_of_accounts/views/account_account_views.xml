@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Chart of Accounts list: click opens the form (not inline edit),
+         no Setup button, Balance column added. -->
+    <record id="view_account_list_ef" model="ir.ui.view">
+        <field name="name">account.account.list.ef</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="editable"></attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_read_account']" position="replace"/>
+            <xpath expr="//field[@name='company_id']" position="after">
+                <field name="current_balance" string="Balance"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Account form: Balance button opens journal items with Cheque Number,
+         and a "Transaction Items" tab next to "Accounting". -->
+    <record id="view_account_form_ef" model="ir.ui.view">
+        <field name="name">account.account.form.ef</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='account.action_move_line_select']" position="attributes">
+                <attribute name="name">action_open_transaction_items</attribute>
+                <attribute name="type">object</attribute>
+            </xpath>
+            <xpath expr="//page[@name='accounting']" position="after">
+                <page name="transaction_items" string="Transaction Items">
+                    <field name="transaction_line_ids" nolabel="1" readonly="1">
+                        <tree create="false" edit="false" delete="false">
+                            <field name="date"/>
+                            <field name="move_id"/>
+                            <field name="journal_id" options="{'no_open': True}"/>
+                            <field name="partner_id"/>
+                            <field name="ref"/>
+                            <field name="name"/>
+                            <field name="expense_check_number"/>
+                            <field name="debit" sum="Total Debit"/>
+                            <field name="credit" sum="Total Credit"/>
+                            <field name="balance" sum="Total Balance"/>
+                            <field name="company_currency_id" invisible="1"/>
+                            <field name="parent_state" invisible="1"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
